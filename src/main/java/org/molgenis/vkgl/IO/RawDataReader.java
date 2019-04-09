@@ -15,7 +15,7 @@ public class RawDataReader {
     public Map<String, ArrayList<HGVSVariant>> HGVSVariants = new HashMap<>();
     public Map<String, ArrayList<CartageniaVariant>> CartageniaModels = new HashMap<>();
 
-    public void ReadFile(File file, FileType fileType) {
+    public void readFile(File file, FileType fileType) {
         //todo find solution if file has headers
         String nameUMC = FilenameUtils.removeExtension(file.getName());
         switch(fileType) {
@@ -34,23 +34,8 @@ public class RawDataReader {
         }
     }
 
-    public Map<String, ArrayList<VCFVariant>> getVCFVariants() {
-        for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariants.entrySet()) {
-            ArrayList<VCFVariant> VCFVariants = entry.getValue();
-            for (VCFVariant variant : VCFVariants) {
-//                System.out.println("VCF variant.getClassification() = " + variant.getClassification());
-            }
-        }
-        return VCFVariants;
-    }
-    public Map<String, ArrayList<HGVSVariant>> getHGVSVariants() {
-        for (Map.Entry<String, ArrayList<HGVSVariant>> entry : HGVSVariants.entrySet()) {
-            ArrayList<HGVSVariant> HGVSVariants = entry.getValue();
-            for (HGVSVariant variant : HGVSVariants) {
-//                System.out.println("HGVS variant.getClassification() = " + variant.getClassification());
-            }
-        }
-        return HGVSVariants; }
+    public Map<String, ArrayList<VCFVariant>> getVCFVariants() { return VCFVariants; }
+    public Map<String, ArrayList<HGVSVariant>> getHGVSVariants() { return HGVSVariants; }
     public Map<String, ArrayList<CartageniaVariant>> getCartageniaVariants() { return CartageniaModels; }
 }
 

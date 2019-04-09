@@ -30,7 +30,6 @@ public class HGVSVariant extends Variant {
     }
 
     public void setClassification (String classification) {
-        //todo vragen of de classificatie van -? en +? goed is. Nu benign (-) en pathogenic (+)
         switch (classification) {
             case "-":
                 this.classification = ClassificationTypes.BENIGN;

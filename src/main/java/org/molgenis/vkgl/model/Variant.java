@@ -1,7 +1,6 @@
 package org.molgenis.vkgl.model;
 
 public class Variant {
-
     String chromosome;
     Enum classification;
     String geneName;
