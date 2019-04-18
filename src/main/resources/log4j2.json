@@ -1,0 +1,26 @@
+{
+  "configuration": {
+    "status": "error",
+    "name": "vkgl_project",
+    "packages": "org.molgenis.vkgl",
+    "ThresholdFilter": {
+      "level": "debug"
+    },
+    "appenders": {
+      "Console": {
+        "name": "STDOUT",
+        "PatternLayout": {
+          "pattern": "%d [%t] %-5p %c{1} - %m%n"
+        }
+      }
+    },
+    "loggers": {
+      "root": {
+        "level": "debug",
+        "AppenderRef": {
+          "ref": "STDOUT"
+        }
+      }
+    }
+  }
+}

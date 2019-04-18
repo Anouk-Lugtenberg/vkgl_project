@@ -1,6 +1,6 @@
 package org.molgenis.vkgl.model;
 
-public enum ClassificationTypes {
+public enum ClassificationType {
     BENIGN,
     LIKELY_BENIGN,
     VOUS,

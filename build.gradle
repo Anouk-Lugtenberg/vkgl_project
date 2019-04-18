@@ -10,8 +10,38 @@ repositories {
     mavenCentral()
 }
 
+//This adds the external dependencies to the jar: https://discuss.gradle.org/t/how-to-include-dependencies-in-jar/19571/5
+//Add extraLibs instead of compile at dependencies.
+configurations {
+    extraLibs
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    extraLibs group: 'commons-io', name: 'commons-io', version: '2.4'
+    // https://mvnrepository.com/artifact/org.json/json
+    compile group: 'org.json', name: 'json', version: '20180813'
+    extraLibs group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'
+    extraLibs group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    extraLibs group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.4'
+    extraLibs group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.7.4'
+    extraLibs group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.7.4'
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+    extraLibs group: 'commons-cli', name: 'commons-cli', version: '1.2'
+
+
+
+    configurations.compile.extendsFrom(configurations.extraLibs)
+}
+
+jar {
+    archiveName = 'vkgl.jar'
+    manifest {
+        attributes 'Main-Class':'org.molgenis.vkgl.Main'
+    }
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

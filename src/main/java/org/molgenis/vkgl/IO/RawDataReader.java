@@ -3,7 +3,7 @@ package org.molgenis.vkgl.IO;
 import org.apache.commons.io.FilenameUtils;
 import org.molgenis.vkgl.model.CartageniaVariant;
 import org.molgenis.vkgl.model.HGVSVariant;
-import org.molgenis.vkgl.model.VCFVariant;
+import org.molgenis.vkgl.model.RadboudVariant;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,31 +11,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RawDataReader {
-    public Map<String, ArrayList<VCFVariant>> VCFVariants = new HashMap<>();
-    public Map<String, ArrayList<HGVSVariant>> HGVSVariants = new HashMap<>();
-    public Map<String, ArrayList<CartageniaVariant>> CartageniaModels = new HashMap<>();
+    private Map<String, ArrayList<RadboudVariant>> RadboudVariants = new HashMap<>();
+    private Map<String, ArrayList<HGVSVariant>> HGVSVariants = new HashMap<>();
+    private Map<String, ArrayList<CartageniaVariant>> CartageniaVariants = new HashMap<>();
+    private static VariantParser variantParser = new VariantParser();
 
-    public void readFile(File file, FileType fileType) {
+    void readFile(File file, FileType fileType) {
         //todo find solution if file has headers
         String nameUMC = FilenameUtils.removeExtension(file.getName());
         switch(fileType) {
-            case VCF:
-                VCFFileProcessor vcfFileProcessor = new VCFFileProcessor();
-                VCFVariants.put(nameUMC, vcfFileProcessor.processVCFFile(file));
+            case RADBOUD:
+                RadboudVariants.put(nameUMC, variantParser.parseRadboud(file));
                 break;
             case HGVS:
-                HGVSFileProcessor hgvsFileProcessor = new HGVSFileProcessor();
-                HGVSVariants.put(nameUMC, hgvsFileProcessor.processHGVSFile(file));
+                HGVSVariants.put(nameUMC, variantParser.parseHGVS(file));
                 break;
             case CARTAGENIA:
-                CartageniaFileProcessor cartageniaFileProcessor = new CartageniaFileProcessor();
-                CartageniaModels.put(nameUMC, cartageniaFileProcessor.processFile(file));
+                CartageniaVariants.put(nameUMC, variantParser.parseCartagenia(file));
                 break;
         }
     }
 
-    public Map<String, ArrayList<VCFVariant>> getVCFVariants() { return VCFVariants; }
+    public Map<String, ArrayList<RadboudVariant>> getVCFVariants() { return RadboudVariants; }
     public Map<String, ArrayList<HGVSVariant>> getHGVSVariants() { return HGVSVariants; }
-    public Map<String, ArrayList<CartageniaVariant>> getCartageniaVariants() { return CartageniaModels; }
+    public Map<String, ArrayList<CartageniaVariant>> getCartageniaVariants() { return CartageniaVariants; }
 }
 

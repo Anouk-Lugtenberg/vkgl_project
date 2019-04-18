@@ -1,6 +1,6 @@
 package org.molgenis.vkgl.model;
 
-public class VCFVariant extends Variant {
+public class RadboudVariant extends Variant {
     int start;
     int stop;
     String REF;
@@ -59,20 +59,29 @@ public class VCFVariant extends Variant {
     public void setClassification(String classification) {
         switch (classification.substring(classification.length() -1)) {
             case "1":
-                this.classification = ClassificationTypes.BENIGN;
+                this.classification = ClassificationType.BENIGN;
                 break;
             case "2":
-                this.classification = ClassificationTypes.LIKELY_BENIGN;
+                this.classification = ClassificationType.LIKELY_BENIGN;
                 break;
             case "3":
-                this.classification = ClassificationTypes.VOUS;
+                this.classification = ClassificationType.VOUS;
                 break;
             case "4":
-                this.classification = ClassificationTypes.LIKELY_PATHOGENIC;
+                this.classification = ClassificationType.LIKELY_PATHOGENIC;
                 break;
             case "5":
-                this.classification = ClassificationTypes.PATHOGENIC;
+                this.classification = ClassificationType.PATHOGENIC;
                 break;
         }
+    }
+
+    @Override
+    public void setVariantType() {
+        System.out.println("REF = " + REF);
+        if (REF.length() == 1 && ALT.length() == 1) {
+            this.variantType = VariantType.SNP;
+        }
+        this.variantType = VariantType.NOT_CLASSIFIED;
     }
 }

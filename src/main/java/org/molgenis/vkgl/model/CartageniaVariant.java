@@ -1,9 +1,8 @@
 package org.molgenis.vkgl.model;
 
-public class CartageniaVariant extends VCFVariant {
+public class CartageniaVariant extends RadboudVariant {
     String timestamp;
     String id;
-    String variantType;
     String location;
     String effect;
     String lastUpdatedOn;
@@ -22,14 +21,6 @@ public class CartageniaVariant extends VCFVariant {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getVariantType() {
-        return variantType;
-    }
-
-    public void setVariantType(String variantType) {
-        this.variantType = variantType;
     }
 
     public String getLocation() {
@@ -56,22 +47,46 @@ public class CartageniaVariant extends VCFVariant {
         this.lastUpdatedOn = lastUpdatedOn;
     }
 
+    @Override
     public void setClassification(String classification) {
         switch (classification) {
             case "BENIGN":
-                this.classification = ClassificationTypes.BENIGN;
+                this.classification = ClassificationType.BENIGN;
                 break;
             case "LIKELY_BENIGN":
-                this.classification = ClassificationTypes.LIKELY_BENIGN;
+                this.classification = ClassificationType.LIKELY_BENIGN;
                 break;
             case "VOUS":
-                this.classification = ClassificationTypes.VOUS;
+                this.classification = ClassificationType.VOUS;
                 break;
             case "LIKELY_PATHOGENIC":
-                this.classification = ClassificationTypes.LIKELY_PATHOGENIC;
+                this.classification = ClassificationType.LIKELY_PATHOGENIC;
                 break;
             case "PATHOGENIC":
-                this.classification = ClassificationTypes.PATHOGENIC;
+                this.classification = ClassificationType.PATHOGENIC;
+                break;
+        }
+    }
+
+    @Override
+    public void setVariantType(String variantType) {
+        switch (variantType) {
+            case "snp":
+                this.variantType = VariantType.SNP;
+                break;
+            case "deletion":
+                this.variantType = VariantType.DELETION;
+                break;
+            case "insertion":
+                this.variantType = VariantType.INSERTION;
+                break;
+            // They've called these kind of variants substitutions, but for clarification it's called a deletion_insertion here.
+            // One (or multiple bases) are substituted by other base(s).
+            case "substitution":
+                this.variantType = VariantType.DELETION_INSERTION;
+                break;
+            default:
+                this.variantType = VariantType.NOT_CLASSIFIED;
                 break;
         }
     }

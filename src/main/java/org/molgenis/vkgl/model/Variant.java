@@ -1,21 +1,24 @@
 package org.molgenis.vkgl.model;
 
-public class Variant {
-    String chromosome;
-    Enum classification;
-    String geneName;
-    String cDNANotation;
-    String proteinNotation;
+import java.io.Serializable;
+
+public class Variant implements Serializable {
+    private String chromosome;
+    ClassificationType classification;
+    private String geneName;
+    private String cDNANotation;
+    private String proteinNotation;
+    VariantType variantType;
 
     public String getChromosome() {
         return chromosome;
     }
 
     public void setChromosome(String chromosome) {
-        this.chromosome = chromosome;
+        this.chromosome = chromosome.startsWith("chr") ? chromosome.substring(3) : chromosome;
     }
 
-    public Enum getClassification() {
+    public ClassificationType getClassification() {
         return classification;
     }
 
@@ -44,4 +47,12 @@ public class Variant {
     public void setProteinNotation(String proteinNotation) {
         this.proteinNotation = proteinNotation;
     }
+
+    public VariantType getVariantType() {
+        return variantType;
+    }
+
+    public void setVariantType() {}
+
+    public void setVariantType(String variantType) {}
 }

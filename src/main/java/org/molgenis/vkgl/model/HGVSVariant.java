@@ -1,9 +1,9 @@
 package org.molgenis.vkgl.model;
 
 public class HGVSVariant extends Variant {
-    String referenceSequence;
-    String genomicDNA;
-    String genomicDNANormalized;
+    private String referenceSequence;
+    private String genomicDNA;
+    private String genomicDNANormalized;
 
     public String getReferenceSequence() {
         return referenceSequence;
@@ -29,22 +29,36 @@ public class HGVSVariant extends Variant {
         this.genomicDNANormalized = genomicDNANormalized;
     }
 
+    @Override
     public void setClassification (String classification) {
         switch (classification) {
             case "-":
-                this.classification = ClassificationTypes.BENIGN;
+                this.classification = ClassificationType.BENIGN;
                 break;
             case "-?":
-                this.classification = ClassificationTypes.LIKELY_BENIGN;
+                this.classification = ClassificationType.LIKELY_BENIGN;
                 break;
             case "?":
-                this.classification = ClassificationTypes.VOUS;
+                this.classification = ClassificationType.VOUS;
                 break;
             case "+?":
-                this.classification = ClassificationTypes.LIKELY_PATHOGENIC;
+                this.classification = ClassificationType.LIKELY_PATHOGENIC;
                 break;
             case "+":
-                this.classification = ClassificationTypes.PATHOGENIC;
+                this.classification = ClassificationType.PATHOGENIC;
+        }
+    }
+
+    @Override
+    public void setVariantType () {
+        if (genomicDNA.contains(">")) {
+            this.variantType = VariantType.SNP;
+        } else if (genomicDNA.contains("ins")) {
+            this.variantType = VariantType.INSERTION;
+        } else if (genomicDNA.contains("del")) {
+            this.variantType = VariantType.DELETION;
+        } else {
+            this.variantType = VariantType.NOT_CLASSIFIED;
         }
     }
 }
