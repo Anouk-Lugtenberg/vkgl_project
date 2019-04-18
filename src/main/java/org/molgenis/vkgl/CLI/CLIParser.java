@@ -9,10 +9,9 @@ import java.io.File;
 
 public class CLIParser {
     private static final Logger LOGGER = LogManager.getLogger(CLIParser.class.getName());
-    private static String inputDirectory;
-    private static String outputDirectory;
-    private static String normalizedDataDirectory;
-    private String[] args = null;
+    private static File outputDirectory;
+    private static File normalizedDataDirectory;
+    private String[] args;
     private Options options = new Options();
 
     public CLIParser(String[] args) {
@@ -26,9 +25,11 @@ public class CLIParser {
     }
 
     public void parseCLI() {
+        File inputDirectory;
         CommandLineParser parser = new BasicParser();
         CommandLine cmd;
         RawFileProcessor rawFileProcessor = new RawFileProcessor();
+        String dirNameNormalizedData = "NormalizedData";
 
         try {
             cmd = parser.parse(options, args);
@@ -36,35 +37,29 @@ public class CLIParser {
                 help();
             }
             if (cmd.hasOption("i")) {
-                inputDirectory = cmd.getOptionValue("i");
                 try {
-                    pathValidDirectory(inputDirectory);
+                    inputDirectory = pathValidDirectory(cmd.getOptionValue("i"));
+                    if (cmd.hasOption("n")) {
+                        normalizedDataDirectory = pathValidDirectory(cmd.getOptionValue("n"));
+                    } else {
+                        normalizedDataDirectory = new File(inputDirectory + File.separator + dirNameNormalizedData);
+                        createNewDirectory(normalizedDataDirectory);
+                    }
+                    if (cmd.hasOption("o")) {
+                        outputDirectory = pathValidDirectory(cmd.getOptionValue("o"));
+                    } else {
+                        outputDirectory = new File(inputDirectory + File.separator + dirNameNormalizedData);
+                        createNewDirectory(outputDirectory);
+                    }
                     rawFileProcessor.processRawFiles(inputDirectory);
                 } catch (IllegalArgumentException e) {
                     LOGGER.error(e.getMessage());
-                }
+            }
             } else {
                 LOGGER.error("Missing directory for input files");
                 help();
             }
-
-            if (cmd.hasOption("n")) {
-                normalizedDataDirectory = cmd.getOptionValue("n");
-                try {
-                    pathValidDirectory(normalizedDataDirectory);
-                } catch (IllegalArgumentException e) {
-                    LOGGER.error(e.getMessage());
-                }
-            }
-            if (cmd.hasOption("o")) {
-                outputDirectory = cmd.getOptionValue("o");
-                try {
-                    pathValidDirectory(outputDirectory);
-                } catch (IllegalArgumentException e) {
-                    LOGGER.error(e.getMessage());
-                }
-            }
-        } catch (ParseException e) {
+        } catch(ParseException e){
             LOGGER.error("Something went wrong while parsing the command line arguments" + e.getMessage());
         }
     }
@@ -76,15 +71,32 @@ public class CLIParser {
     }
 
     /**
-     *
-     * @param path
-     * @return
-     * @throws IllegalArgumentException
+     * Checks if the path given by the user is a valid directory.
+     * @param path a String representation of a path.
+     * @return a File object from the given path.
+     * @throws IllegalArgumentException if path is not a valid directory.
      */
-    private void pathValidDirectory(String path) {
+    private File pathValidDirectory(String path) {
         File file = new File(path);
         if (!file.isDirectory()) {
             throw new IllegalArgumentException(path + " is not a (existing) directory.");
         }
+        return file;
+    }
+
+    private void createNewDirectory(File file) {
+        if (file.mkdir()) {
+            LOGGER.info("New directory created for normalized files: " + file);
+        } else {
+            LOGGER.warn("Something went wrong while creating the directory for the output files.");
+        }
+    }
+
+    public static File getOutputDirectory() {
+        return outputDirectory;
+    }
+
+    public static File getNormalizedDataDirectory() {
+        return normalizedDataDirectory;
     }
 }

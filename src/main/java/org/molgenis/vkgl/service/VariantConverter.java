@@ -3,12 +3,14 @@ package org.molgenis.vkgl.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.molgenis.vkgl.CLI.CLIParser;
 import org.molgenis.vkgl.IO.RawDataReader;
 import org.molgenis.vkgl.model.CartageniaVariant;
 import org.molgenis.vkgl.model.HGVSVariant;
 import org.molgenis.vkgl.model.RadboudVariant;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -29,14 +31,17 @@ public class VariantConverter {
         Map<String, ArrayList<RadboudVariant>> VCFVariants = rawData.getVCFVariants();
         Map<String, ArrayList<CartageniaVariant>> CartageniaVariants = rawData.getCartageniaVariants();
 
+        File outputDirectory = CLIParser.getOutputDirectory();
+        LOGGER.info("outputDirectory: " + outputDirectory);
+
 //        HGVSVariantConverter HGVSVariantConverter = new HGVSVariantConverter();
 
         for (Map.Entry<String, ArrayList<HGVSVariant>> entry : HGVSVariants.entrySet()) {
             ArrayList<HGVSVariant> variants = entry.getValue();
             for (HGVSVariant variant : variants) {
                 createUniqueIdentifier(variant);
-                LOGGER.info("Checking HGVS Syntax for: " + variant.getGenomicDNA());
-                checkHGVSSyntax(variant.getGenomicDNA());
+//                LOGGER.info("Checking HGVS Syntax for: " + variant.getGenomicDNA());
+//                checkHGVSSyntax(variant.getGenomicDNA());
 //                System.out.println("variant.getVariantType() = " + variant.getVariantType());
             }
         }

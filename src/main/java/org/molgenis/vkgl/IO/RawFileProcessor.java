@@ -14,11 +14,12 @@ public class RawFileProcessor {
     private static FileTypeDeterminer fileTypeDeterminer = new FileTypeDeterminer();
     private static VariantConverter variantConverter = new VariantConverter();
 
-    public void processRawFiles(String filePath) {
+    public void processRawFiles(File filePath) {
         String[] fileExtensions = new String[2];
+        //File extensions from the raw files.
         fileExtensions[0] = "csv";
         fileExtensions[1] = "txt";
-        Iterator iterator = FileUtils.iterateFiles(new File(filePath), fileExtensions, false);
+        Iterator iterator = FileUtils.iterateFiles(filePath, fileExtensions, false);
         while (iterator.hasNext()) {
             Object file = iterator.next();
             LOGGER.info("Processing file: " + file);
