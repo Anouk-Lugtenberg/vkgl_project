@@ -8,30 +8,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class CLIParserTest {
+class CLIParserTest {
 
-    //Used for the test of log4j.
+    //Used for testing the output of Log4j2.
     private LogAppenderResource appender = new LogAppenderResource(LogManager.getLogger(CLIParser.class.getName()));
     private CLIParser CLIParser = new CLIParser();
+//
+//    @TempDir
+//    static Path inputDirectory;
+//
+//    @TempDir
+//    static Path outputDirectory;
 
-    @TempDir
-    static Path inputDirectory;
-
-    @TempDir
-    static Path outputDirectory;
-
-    @BeforeAll
-    static void setUp() {
-        assertTrue(Files.isDirectory(inputDirectory));
-        assertTrue(Files.isDirectory(outputDirectory));
-    }
+//    @BeforeAll
+//    static void setUp() {
+//        assertTrue(Files.isDirectory(inputDirectory));
+//        assertTrue(Files.isDirectory(outputDirectory));
+//    }
 
     @BeforeEach
     void init() {
@@ -44,7 +45,7 @@ public class CLIParserTest {
     }
 
     @Test
-    void noCLIArgumentsPresent() {
+    void throwsErrorWhenNoCLIArgumentsPresent() {
         String[] args = new String[0];
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> CLIParser.parseCLI(args),
@@ -53,7 +54,7 @@ public class CLIParserTest {
     }
 
     @Test
-    void setInputDirectorySunny() {
+    void setInputDirectorySunny(@TempDir Path inputDirectory) {
         String[] args = new String[2];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
@@ -62,7 +63,7 @@ public class CLIParserTest {
     }
 
     @Test
-    void setInputDirectoryPathNotValid() {
+    void throwsErrorWhenInputDirectoryPathNotValid() {
         String[] args = new String[2];
         args[0] = "-i";
         args[1] = "/this/directory/does/not/exist";
@@ -70,32 +71,75 @@ public class CLIParserTest {
                 () -> CLIParser.parseCLI(args),
                 "Expected parseCLI() to throw IllegalArgumentException when input directory" +
                         "is not valid, but it didn't.");
-        assertTrue(thrown.getMessage().contains(args[1] + " is not a (existing) directory."));
+        assertTrue(thrown.getMessage().contains(args[1] + " is not a valid directory."));
     }
 
     @Test
-    void setOutputDirectoryGivenByUserSunny() {
+    void setOutputDirectoryGivenByUserSunny(@TempDir Path inputDirectory, @TempDir Path outputDirectory) {
         String[] args = new String[4];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         args[2] = "-o";
         args[3] = outputDirectory.toString();
         CLIParser.parseCLI(args);
-        assertEquals(CLIParser.getOutputDirectory(), new File(outputDirectory.toString()));
+        File expectedOutputDirectory = new File(outputDirectory.toString());
+        File actualOutputDirectory = CLIParser.getOutputDirectory();
+        assertEquals(actualOutputDirectory, expectedOutputDirectory);
     }
 
     @Test
-    void setOutputDirectoryGivenByUserPathNotValid() {
-
+    void throwsErrorWhenOutputDirectoryGivenByUserPathNotValid(@TempDir Path inputDirectory) {
+        String[] args = new String[4];
+        args[0] = "-i";
+        args[1] = inputDirectory.toString();
+        args[2] = "-o";
+        args[3] = "/not/a/directory";
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> CLIParser.parseCLI(args),
+                "Expected parseCLI() to throw IllegalArgumentException when input directory" +
+                        "is not valid, but it didn't.");
+        assertTrue(thrown.getMessage().contains(args[3] + " is not a valid directory."));
     }
 
     @Test
-    void setStandardOutputDirectory() {
+    void setOutputDirectoryIfNotGivenByUser(@TempDir Path inputDirectory) {
         String[] args = new String[2];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         CLIParser.parseCLI(args);
-        assertEquals(CLIParser.getOutputDirectory(), new File(inputDirectory.toString() +
-                File.separator + "normalizedData"));
+        File expectedOutputDirectory = new File(inputDirectory.toString() +
+                File.separator + "normalizedData");
+        File actualOutputDirectory = CLIParser.getOutputDirectory();
+        assertEquals(actualOutputDirectory, expectedOutputDirectory);
+    }
+
+    @Test
+    void emptyNormalizedDataDirectoryWithCleanRun(@TempDir Path inputDirectory, @TempDir Path outputDirectory) throws IOException {
+        String[] args = new String[5];
+        args[0] = "-i";
+        args[1] = inputDirectory.toString();
+        args[2] = "-o";
+        args[3] = outputDirectory.toString();
+        args[4] = "--cleanRun";
+
+        //Adds file to output directory to be deleted
+        Path file = Files.createFile(outputDirectory.resolve("test.txt"));
+        //Check that the file is added.
+        assertTrue(Files.exists(file));
+
+        CLIParser.parseCLI(args);
+
+        //Check that file is deleted on clean run.
+        assertFalse(Files.exists(file));
+    }
+
+    @Test
+    void catchFileAlreadyExistsExceptionIfOutputDirectoryAlreadyExists(@TempDir Path inputDirectory) throws IOException {
+        Path file = Files.createDirectory(new File(inputDirectory.toString() + File.separator + "normalizedData").toPath());
+        String[] args = new String[2];
+        args[0] = "-i";
+        args[1] = inputDirectory.toString();
+        CLIParser.parseCLI(args);
+        assertThat(appender.getOutput(), containsString("Directory: " + file + " already exists, not creating it again."));
     }
 }

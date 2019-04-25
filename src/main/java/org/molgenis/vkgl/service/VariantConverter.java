@@ -38,9 +38,9 @@ public class VariantConverter {
             ArrayList<HGVSVariant> variants = entry.getValue();
             for (HGVSVariant variant : variants) {
                 createUniqueIdentifier(variant);
-//                LOGGER.info("Checking HGVS Syntax for: " + variant.getGenomicDNA());
-//                checkHGVSSyntax(variant.getGenomicDNA());
-//                System.out.println("variant.getVariantType() = " + variant.getVariantType());
+                LOGGER.info("Checking HGVS Syntax for: " + variant.getGenomicDNA());
+                checkHGVSSyntax(variant.getGenomicDNA());
+                System.out.println("variant.getVariantType() = " + variant.getVariantType());
             }
         }
 

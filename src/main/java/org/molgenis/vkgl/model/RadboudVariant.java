@@ -1,12 +1,12 @@
 package org.molgenis.vkgl.model;
 
 public class RadboudVariant extends Variant {
-    int start;
-    int stop;
-    String REF;
-    String ALT;
-    String exon;
-    String transcript;
+    private int start;
+    private int stop;
+    private String REF;
+    private String ALT;
+    private String exon;
+    private String transcript;
 
     public int getStart() {
         return start;
