@@ -50,16 +50,17 @@ public class CLIParser {
                     outputDirectory = pathValidDirectory(cmd.getOptionValue("o"));
                 } else {
                     outputDirectory = new File(inputDirectory + File.separator + dirNameNormalizedData);
+                    //Creates new directory for normalized data if directory doesn't already exist.
+                    createNewDirectory(outputDirectory);
                 }
                 setOutputDirectory(outputDirectory);
-                createNewDirectory(outputDirectory);
                 if (cmd.hasOption("cleanRun")) {
                     emptyNormalizedDataDirectory(outputDirectory);
                 }
             } else {
                 throw new IllegalArgumentException("Missing directory for input files.");
             }
-        } catch(ParseException e){
+        } catch (ParseException e){
             LOGGER.error("Something went wrong while parsing the command line arguments" + e.getMessage());
         }
     }
@@ -81,7 +82,7 @@ public class CLIParser {
     private File pathValidDirectory(String path) {
         File file = new File(path);
         if (!file.isDirectory()) {
-            throw new IllegalArgumentException(path + " is not a (existing) directory.");
+            throw new IllegalArgumentException(path + " is not a valid directory.");
         }
         return file;
     }

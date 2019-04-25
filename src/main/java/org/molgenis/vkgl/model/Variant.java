@@ -3,12 +3,26 @@ package org.molgenis.vkgl.model;
 import java.io.Serializable;
 
 public class Variant implements Serializable {
-    private String chromosome;
     ClassificationType classification;
+    VariantType variantType;
+    private String chromosome;
     private String geneName;
     private String cDNANotation;
     private String proteinNotation;
-    VariantType variantType;
+
+    public ClassificationType getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {}
+
+    public VariantType getVariantType() {
+        return variantType;
+    }
+
+    public void setVariantType() {}
+
+    public void setVariantType(String variantType) {}
 
     public String getChromosome() {
         return chromosome;
@@ -17,12 +31,6 @@ public class Variant implements Serializable {
     public void setChromosome(String chromosome) {
         this.chromosome = chromosome.startsWith("chr") ? chromosome.substring(3) : chromosome;
     }
-
-    public ClassificationType getClassification() {
-        return classification;
-    }
-
-    public void setClassification(String classification) {}
 
     public String getGeneName() {
         return geneName;
@@ -48,11 +56,5 @@ public class Variant implements Serializable {
         this.proteinNotation = proteinNotation;
     }
 
-    public VariantType getVariantType() {
-        return variantType;
-    }
 
-    public void setVariantType() {}
-
-    public void setVariantType(String variantType) {}
 }
