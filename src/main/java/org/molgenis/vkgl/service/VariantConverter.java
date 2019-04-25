@@ -26,13 +26,11 @@ public class VariantConverter {
     private int deletionCount = 0;
     private int duplicationCount = 0;
 
-    public void convertVariants(RawDataReader rawData) {
+    public void convertVariants(RawDataReader rawData, File outputDirectory) {
         Map<String, ArrayList<HGVSVariant>> HGVSVariants = rawData.getHGVSVariants();
         Map<String, ArrayList<RadboudVariant>> VCFVariants = rawData.getVCFVariants();
         Map<String, ArrayList<CartageniaVariant>> CartageniaVariants = rawData.getCartageniaVariants();
 
-        File outputDirectory = CLIParser.getOutputDirectory();
-        LOGGER.info("outputDirectory: " + outputDirectory);
 
 //        HGVSVariantConverter HGVSVariantConverter = new HGVSVariantConverter();
 

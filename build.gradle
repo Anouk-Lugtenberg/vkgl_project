@@ -18,6 +18,10 @@ configurations {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    // https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all
+    testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+
+
     // https://mvnrepository.com/artifact/commons-io/commons-io
     extraLibs group: 'commons-io', name: 'commons-io', version: '2.4'
     // https://mvnrepository.com/artifact/org.json/json
@@ -30,6 +34,9 @@ dependencies {
     extraLibs group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.7.4'
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
     extraLibs group: 'commons-cli', name: 'commons-cli', version: '1.2'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
 
 
 
@@ -44,4 +51,8 @@ jar {
     from {
         configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
     }
+}
+
+test {
+    useJUnitPlatform()
 }

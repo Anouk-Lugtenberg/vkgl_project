@@ -1,10 +1,10 @@
 package org.molgenis.vkgl;
 
-import org.molgenis.vkgl.CLI.CLIParser;
+import org.molgenis.vkgl.IO.RawFileProcessor;
 
 public class Main {
     public static void main(String[] args) {
-        CLIParser CLIParser = new CLIParser(args);
-        CLIParser.parseCLI();
+        RawFileProcessor rawFileProcessor = new RawFileProcessor();
+        rawFileProcessor.start(args);
     }
 }

@@ -1,73 +1,75 @@
 package org.molgenis.vkgl.CLI;
 
 import org.apache.commons.cli.*;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.IO.RawFileProcessor;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class CLIParser {
     private static final Logger LOGGER = LogManager.getLogger(CLIParser.class.getName());
-    private static File outputDirectory;
-    private static File normalizedDataDirectory;
-    private String[] args;
     private Options options = new Options();
+    private File inputDirectory;
+    private File outputDirectory;
 
-    public CLIParser(String[] args) {
-        this.args = args;
-        options.addOption("h", "help", false, "show help");
-        options.addOption("i", "inputDirectory", true, "directory containing variant files");
-        options.addOption("n", "normalizedDataDirectory", true, "directory containing (already) formatted files. " +
-                "if not specified the program will look for the files in <inputDirectory>/normalizedData");
-        options.addOption("o", "outputDirectory", true, "directory for storage of the normalized output files, " +
-                "if not specified it falls back on <inputDirectory>/normalizedData. If this doesn't contain any data, the program will start fresh.");
+
+    public CLIParser() {
+        options.addOption("h", "help", false, "Show help.");
+        options.addOption("i", "inputDirectory", true, "Directory containing variant files.");
+        options.addOption("o", "outputDirectory", true, "Directory for storage of the normalized output files. The program will also use these files to check" +
+                "if previous runs has been done and will not execute again for variants already in this directory. If not specified the directory '/normalizedData' will be used.");
+        options.addOption(null, "cleanRun", false, "Empties the directory given under option 'outputDirectory' or the standard '/normalizedData'" +
+                "directory and starts a clean run.");
     }
 
-    public void parseCLI() {
-        File inputDirectory;
+    /**
+     * Parses the CLI commands.
+     * Four options are available:
+     * - 'help': Shows the help of the program to the user.
+     * - 'inputDirectory': The directory of the input files.
+     * - 'outputDirectory': The directory of the output files.
+     * - 'cleanRun': A clean run of the program, meaning: the output directory will be emptied and the program runs for all the variants.
+     */
+    public void parseCLI(String[] args) {
         CommandLineParser parser = new BasicParser();
         CommandLine cmd;
-        RawFileProcessor rawFileProcessor = new RawFileProcessor();
-        String dirNameNormalizedData = "NormalizedData";
+        String dirNameNormalizedData = "normalizedData";
 
         try {
             cmd = parser.parse(options, args);
             if (cmd.hasOption("h")) {
                 help();
-            }
-            if (cmd.hasOption("i")) {
-                try {
-                    inputDirectory = pathValidDirectory(cmd.getOptionValue("i"));
-                    if (cmd.hasOption("n")) {
-                        normalizedDataDirectory = pathValidDirectory(cmd.getOptionValue("n"));
-                    } else {
-                        normalizedDataDirectory = new File(inputDirectory + File.separator + dirNameNormalizedData);
-                        createNewDirectory(normalizedDataDirectory);
-                    }
-                    if (cmd.hasOption("o")) {
-                        outputDirectory = pathValidDirectory(cmd.getOptionValue("o"));
-                    } else {
-                        outputDirectory = new File(inputDirectory + File.separator + dirNameNormalizedData);
-                        createNewDirectory(outputDirectory);
-                    }
-                    rawFileProcessor.processRawFiles(inputDirectory);
-                } catch (IllegalArgumentException e) {
-                    LOGGER.error(e.getMessage());
-            }
+            } else if (cmd.hasOption("i")) {
+                setInputDirectory(pathValidDirectory(cmd.getOptionValue("i")));
+                if (cmd.hasOption("o")) {
+                    outputDirectory = pathValidDirectory(cmd.getOptionValue("o"));
+                } else {
+                    outputDirectory = new File(inputDirectory + File.separator + dirNameNormalizedData);
+                }
+                setOutputDirectory(outputDirectory);
+                createNewDirectory(outputDirectory);
+                if (cmd.hasOption("cleanRun")) {
+                    emptyNormalizedDataDirectory(outputDirectory);
+                }
             } else {
-                LOGGER.error("Missing directory for input files");
-                help();
+                throw new IllegalArgumentException("Missing directory for input files.");
             }
         } catch(ParseException e){
             LOGGER.error("Something went wrong while parsing the command line arguments" + e.getMessage());
         }
     }
 
+    /**
+     * Prints the help to the user.
+     */
     private void help() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("Main", options);
-        System.exit(0);
     }
 
     /**
@@ -84,19 +86,53 @@ public class CLIParser {
         return file;
     }
 
-    private void createNewDirectory(File file) {
-        if (file.mkdir()) {
-            LOGGER.info("New directory created for normalized files: " + file);
-        } else {
-            LOGGER.warn("Something went wrong while creating the directory for the output files.");
+    /**
+     * Creates new directory. If the directory already exists, it is not overwritten.
+     * @param directory the directory to create.
+     */
+    private void createNewDirectory(File directory) {
+        LOGGER.debug("Creating new directory: " + directory);
+        try {
+            Files.createDirectory(Paths.get(directory.toString()));
+        } catch (FileAlreadyExistsException e) {
+            LOGGER.debug("Directory: " + directory + " already exists, not creating it again.");
+        } catch (IOException e) {
+            LOGGER.warn("Something went wrong while creating directory for: " + directory);
+            LOGGER.warn(e.getStackTrace());
         }
     }
 
-    public static File getOutputDirectory() {
+    /**
+     * Empties the data directory if there are files present.
+     * @param directory the directory to clean.
+     */
+    private void emptyNormalizedDataDirectory(File directory) {
+        LOGGER.info("Emptying: " + directory);
+        try {
+            FileUtils.cleanDirectory(directory);
+        } catch (IOException e) {
+            LOGGER.warn("Something went wrong while emptying the normalized data directory: " + directory);
+            LOGGER.debug(e.getStackTrace());
+        }
+    }
+
+    /**
+     * Returns the output directory, which is set via the cli parser.
+     * @return File outputDirectory
+     */
+    public File getOutputDirectory() {
         return outputDirectory;
     }
 
-    public static File getNormalizedDataDirectory() {
-        return normalizedDataDirectory;
+    private void setOutputDirectory(File outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    public File getInputDirectory() {
+        return inputDirectory;
+    }
+
+    private void setInputDirectory(File inputDirectory) {
+        this.inputDirectory = inputDirectory;
     }
 }
