@@ -2,10 +2,10 @@ package org.molgenis.vkgl.CLI;
 
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.molgenis.vkgl.LogAppenderResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,18 +21,6 @@ class CLIParserTest {
     //Used for testing the output of Log4j2.
     private LogAppenderResource appender = new LogAppenderResource(LogManager.getLogger(CLIParser.class.getName()));
     private CLIParser CLIParser = new CLIParser();
-//
-//    @TempDir
-//    static Path inputDirectory;
-//
-//    @TempDir
-//    static Path outputDirectory;
-
-//    @BeforeAll
-//    static void setUp() {
-//        assertTrue(Files.isDirectory(inputDirectory));
-//        assertTrue(Files.isDirectory(outputDirectory));
-//    }
 
     @BeforeEach
     void init() {
@@ -59,7 +47,7 @@ class CLIParserTest {
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         CLIParser.parseCLI(args);
-        assertEquals(CLIParser.getInputDirectory(), new File(inputDirectory.toString()));
+        assertEquals(CLIParser.getInputDirectory(), inputDirectory);
     }
 
     @Test
@@ -82,9 +70,8 @@ class CLIParserTest {
         args[2] = "-o";
         args[3] = outputDirectory.toString();
         CLIParser.parseCLI(args);
-        File expectedOutputDirectory = new File(outputDirectory.toString());
-        File actualOutputDirectory = CLIParser.getOutputDirectory();
-        assertEquals(actualOutputDirectory, expectedOutputDirectory);
+        Path actualOutputDirectory = CLIParser.getOutputDirectory();
+        assertEquals(actualOutputDirectory, outputDirectory);
     }
 
     @Test
@@ -107,9 +94,8 @@ class CLIParserTest {
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         CLIParser.parseCLI(args);
-        File expectedOutputDirectory = new File(inputDirectory.toString() +
-                File.separator + "normalizedData");
-        File actualOutputDirectory = CLIParser.getOutputDirectory();
+        Path expectedOutputDirectory = new File(inputDirectory.toString() + File.separator + "normalizedData").toPath();
+        Path actualOutputDirectory = CLIParser.getOutputDirectory();
         assertEquals(actualOutputDirectory, expectedOutputDirectory);
     }
 

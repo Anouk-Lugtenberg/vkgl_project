@@ -4,41 +4,77 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.CLI.CLIParser;
-import org.molgenis.vkgl.service.VariantConverter;
+import org.molgenis.vkgl.service.VariantFormat;
+import org.molgenis.vkgl.service.VariantFormatDeterminer;
+import org.molgenis.vkgl.service.VariantToVCFConverter;
+import org.molgenis.vkgl.service.VariantTypeCounter;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 public class RawFileProcessor {
     private static final Logger LOGGER = LogManager.getLogger(RawFileProcessor.class.getName());
     private CLIParser CLIParser = new CLIParser();
-    private RawDataReader rawDataReader = new RawDataReader();
-    private FileTypeDeterminer fileTypeDeterminer = new FileTypeDeterminer();
-    private VariantConverter variantConverter = new VariantConverter();
+    private VariantParser variantParser = new VariantParser();
+    private VariantToVCFConverter variantConverter = new VariantToVCFConverter();
 
+    /**
+     * Starts the processing of command line arguments.
+     * Gets the input directory from the user, and starts processing the files in this directory.
+     * @param args arguments from the command line.
+     */
     public void start(String args[]) {
         CLIParser.parseCLI(args);
-        File inputDirectory = CLIParser.getInputDirectory();
-        processRawFiles(inputDirectory);
+        Path inputDirectory = CLIParser.getInputDirectory();
+        processFiles(inputDirectory);
+
+        if (CLIParser.getWriteVariantTypesToFile()) {
+            startVariantWriter();
+        }
+
+        if (CLIParser.getCountVariantTypes()) {
+            startVariantCounter();
+        }
     }
 
-    private void processRawFiles(File filePath) {
-        String[] fileExtensions = new String[2];
+    /**
+     * Starts the processing of the variant files in a directory.
+     * @param filePath File - which contains the input files.
+     */
+    private void processFiles(Path filePath) {
+        String[] fileExtensions = new String[3];
         //File extensions from the raw files.
         fileExtensions[0] = "csv";
         fileExtensions[1] = "txt";
-        Iterator iterator = FileUtils.iterateFiles(filePath, fileExtensions, false);
+        Iterator<File> iterator = FileUtils.iterateFiles(new File(filePath.toString()), fileExtensions, false);
         while (iterator.hasNext()) {
-            Object file = iterator.next();
+            File file = iterator.next();
             LOGGER.info("Processing file: " + file);
-            FileType fileType = getFileType((File) file);
-            rawDataReader.readFile((File) file, fileType);
+            VariantFormatDeterminer variantFormatDeterminer = new VariantFormatDeterminer();
+            VariantFormat variantFormat = variantFormatDeterminer.getVariantFormat(file.toString());
+            variantParser.parseFile(file, variantFormat);
         }
-        variantConverter.convertVariants(rawDataReader, CLIParser.getOutputDirectory());
-
     }
 
-    private FileType getFileType(File file) {
-        return fileTypeDeterminer.determineFileType(file);
+    /**
+     * Starts the variant writer.
+     */
+    private void startVariantWriter() {
+        try {
+            VariantWriter variantWriter = new VariantWriter(variantParser.getAllVariants(), "differenceInVariants");
+            variantWriter.writeDifferenceInVariantTypesToFile();
+        } catch (IOException e) {
+            LOGGER.warn("Something went wrong while writing variants to file. Continuing program.");
+        }
+    }
+
+    /**
+     * Starts the variant counter.
+     */
+    private void startVariantCounter() {
+        new VariantTypeCounter(variantParser.getAllVariants());
+        variantConverter.convertVariants(variantParser.getAllVariants(), CLIParser.getOutputDirectory());
     }
 }

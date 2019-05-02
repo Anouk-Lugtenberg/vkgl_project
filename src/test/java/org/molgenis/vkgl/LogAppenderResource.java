@@ -1,4 +1,4 @@
-package org.molgenis.vkgl.CLI;
+package org.molgenis.vkgl;
 
 
 import org.apache.logging.log4j.core.Logger;
@@ -28,7 +28,7 @@ public class LogAppenderResource extends ExternalResource {
     }
 
     @Override
-    protected void before() {
+    public void before() {
         StringLayout layout = PatternLayout.newBuilder().withPattern(PATTERN).build();
         appender = WriterAppender.newBuilder()
                 .setTarget(outContent)
@@ -39,7 +39,7 @@ public class LogAppenderResource extends ExternalResource {
     }
 
     @Override
-    protected void after() {
+    public void after() {
         LOGGER.removeAppender(appender);
     }
 

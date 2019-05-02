@@ -8,6 +8,10 @@ public class RadboudVariant extends Variant {
     private String exon;
     private String transcript;
 
+    public void setIdentifier() {
+        this.identifier = this.start + "_" + this.stop;
+    }
+
     public int getStart() {
         return start;
     }
@@ -74,14 +78,5 @@ public class RadboudVariant extends Variant {
                 this.classification = ClassificationType.PATHOGENIC;
                 break;
         }
-    }
-
-    @Override
-    public void setVariantType() {
-        System.out.println("REF = " + REF);
-        if (REF.length() == 1 && ALT.length() == 1) {
-            this.variantType = VariantType.SNP;
-        }
-        this.variantType = VariantType.NOT_CLASSIFIED;
     }
 }

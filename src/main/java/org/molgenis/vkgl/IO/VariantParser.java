@@ -1,28 +1,99 @@
 package org.molgenis.vkgl.IO;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.model.CartageniaVariant;
 import org.molgenis.vkgl.model.HGVSVariant;
 import org.molgenis.vkgl.model.RadboudVariant;
+import org.molgenis.vkgl.model.Variant;
+import org.molgenis.vkgl.service.VariantFormat;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 class VariantParser {
-    ArrayList<RadboudVariant> parseRadboud(File file) {
-        ArrayList<RadboudVariant> RadboudVariants = new ArrayList<>();
+    private static final Logger LOGGER = LogManager.getLogger(VariantParser.class.getName());
+    private Map<String, ArrayList<RadboudVariant>> radboudVariants = new HashMap<>();
+    private Map<String, ArrayList<HGVSVariant>> HGVSVariants = new HashMap<>();
+    private Map<String, ArrayList<CartageniaVariant>> cartageniaVariants = new HashMap<>();
+    private Map<String, ArrayList<Variant>> allVariants = new HashMap<>();
+
+    void parseFile(File file, VariantFormat variantFormat) {
+        String nameUMC = FilenameUtils.removeExtension(file.getName());
+        ArrayList<RadboudVariant> listRadboudVariants = new ArrayList<>();
+        ArrayList<HGVSVariant> listHGVSVariants = new ArrayList<>();
+        ArrayList<CartageniaVariant> listCartageniaVariants = new ArrayList<>();
+        ArrayList<Variant> listAllVariants = new ArrayList<>();
+        int lineCount = 0;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
+            BufferedReader reader = new BufferedReader(new FileReader(file));
             while ((line = reader.readLine()) != null) {
-                RadboudVariants.add(createRadboudVariant(line));
+                lineCount++;
+                try {
+                    switch(variantFormat) {
+                        case RADBOUD:
+                            RadboudVariant radboudVariant = createRadboudVariant(line);
+                            listRadboudVariants.add(radboudVariant);
+                            listAllVariants.add(radboudVariant);
+                            break;
+                        case HGVS:
+                            HGVSVariant HGVSVariant = createHGVSVariant(line);
+                            listHGVSVariants.add(HGVSVariant);
+                            listAllVariants.add(HGVSVariant);
+                            break;
+                        case CARTAGENIA:
+                            CartageniaVariant cartageniaVariant = createCartageniaVariant(line);
+                            listCartageniaVariants.add(cartageniaVariant);
+                            listAllVariants.add(cartageniaVariant);
+                            break;
+                    }
+                } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
+                    if (lineCount != 1) {
+                        LOGGER.error("Line " + lineCount + " of " + file + " could not be processed. Please check the syntax.");
+                        LOGGER.error(line);
+                    }
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Something went wrong while parsing file: " + file);
+            LOGGER.info(e.getMessage());
         }
-        return RadboudVariants;
+
+        switch(variantFormat) {
+            case RADBOUD:
+                radboudVariants.put(nameUMC, listRadboudVariants);
+                break;
+            case HGVS:
+                HGVSVariants.put(nameUMC, listHGVSVariants);
+                break;
+            case CARTAGENIA:
+                cartageniaVariants.put(nameUMC, listCartageniaVariants);
+        }
+
+        allVariants.put(nameUMC, listAllVariants);
+    }
+
+    public Map<String, ArrayList<RadboudVariant>> getRadboudVariants() {
+        return radboudVariants;
+    }
+
+    public Map<String, ArrayList<HGVSVariant>> getHGVSVariants() {
+        return HGVSVariants;
+    }
+
+    public Map<String, ArrayList<CartageniaVariant>> getCartageniaVariants() {
+        return cartageniaVariants;
+    }
+
+    public Map<String, ArrayList<Variant>> getAllVariants() {
+        return allVariants;
     }
 
     private RadboudVariant createRadboudVariant(String line) {
@@ -39,50 +110,31 @@ class VariantParser {
         RadboudVariant.setProteinNotation(columns[8]);
         RadboudVariant.setExon(columns[11]);
         RadboudVariant.setClassification(columns[13]);
+        RadboudVariant.setVariantType(RadboudVariant.getcDNANotation());
+        RadboudVariant.setIdentifier();
+        RadboudVariant.setRawInformation(line);
         return RadboudVariant;
     }
 
-    ArrayList<HGVSVariant> parseHGVS(File file) {
-        ArrayList<HGVSVariant> HGVSVariants = new ArrayList<>();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                HGVSVariants.add(createHGVSVariant(line));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return HGVSVariants;
-    }
-
     private HGVSVariant createHGVSVariant(String line) {
-        HGVSVariant HGVSVariant = new HGVSVariant();
-        String[] columns = line.split("\t");
-        HGVSVariant.setReferenceSequence(columns[0]);
-        HGVSVariant.setChromosome(columns[1]);
-        HGVSVariant.setGenomicDNA(columns[2]);
-        HGVSVariant.setGenomicDNANormalized(columns[3]);
-        HGVSVariant.setClassification(columns[4]);
-        HGVSVariant.setGeneName(columns[5]);
-        HGVSVariant.setcDNANotation(columns[6]);
-        HGVSVariant.setProteinNotation(columns[7]);
-        HGVSVariant.setVariantType();
-        return HGVSVariant;
-    }
-
-    ArrayList<CartageniaVariant> parseCartagenia(File file) {
-        ArrayList<CartageniaVariant> CartageniaVariants = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                CartageniaVariants.add(createCartageniaVariant(line));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            HGVSVariant HGVSVariant = new HGVSVariant();
+            String[] columns = line.split("\t");
+            HGVSVariant.setReferenceSequence(columns[0]);
+            HGVSVariant.setChromosome(columns[1]);
+            HGVSVariant.setGenomicDNA(columns[2]);
+            HGVSVariant.setGenomicDNANormalized(columns[3]);
+            HGVSVariant.setClassification(columns[4]);
+            HGVSVariant.setGeneName(columns[5]);
+            HGVSVariant.setcDNANotation(columns[6]);
+            HGVSVariant.setProteinNotation(columns[7]);
+            HGVSVariant.setVariantType(HGVSVariant.getGenomicDNA());
+            HGVSVariant.setRawInformation(line);
+            return HGVSVariant;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            LOGGER.info("Line: " + line);
+            return null;
         }
-        return CartageniaVariants;
     }
 
     private CartageniaVariant createCartageniaVariant(String line) {
@@ -105,6 +157,7 @@ class VariantParser {
         cartageniaVariant.setEffect(columns[14]);
         cartageniaVariant.setClassification(columns[15]);
         cartageniaVariant.setLastUpdatedOn(columns[16]);
+        cartageniaVariant.setRawInformation(line);
         return cartageniaVariant;
     }
 }

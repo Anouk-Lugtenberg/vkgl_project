@@ -48,17 +48,4 @@ public class HGVSVariant extends Variant {
                 this.classification = ClassificationType.PATHOGENIC;
         }
     }
-
-    @Override
-    public void setVariantType () {
-        if (genomicDNA.contains(">")) {
-            this.variantType = VariantType.SNP;
-        } else if (genomicDNA.contains("ins")) {
-            this.variantType = VariantType.INSERTION;
-        } else if (genomicDNA.contains("del")) {
-            this.variantType = VariantType.DELETION;
-        } else {
-            this.variantType = VariantType.NOT_CLASSIFIED;
-        }
-    }
 }
