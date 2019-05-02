@@ -1,6 +1,8 @@
 package org.molgenis.vkgl.model;
 
-public class RadboudVariant extends Variant {
+import java.util.Comparator;
+
+public class RadboudVariant extends Variant implements Comparable<RadboudVariant> {
     private int start;
     private int stop;
     private String REF;
@@ -78,5 +80,15 @@ public class RadboudVariant extends Variant {
                 this.classification = ClassificationType.PATHOGENIC;
                 break;
         }
+    }
+
+    @Override
+    public int compareTo(RadboudVariant radboudVariant) {
+        return Comparators.START.compare(this, radboudVariant);
+    }
+
+    public static class Comparators {
+        public static final Comparator<RadboudVariant> CHROMOSOME = Comparator.comparing(RadboudVariant::getChromosome);
+        public static final Comparator<RadboudVariant> START = CHROMOSOME.thenComparing(RadboudVariant::getStart);
     }
 }

@@ -63,8 +63,8 @@ public class RawFileProcessor {
      */
     private void startVariantWriter() {
         try {
-            VariantWriter variantWriter = new VariantWriter(variantParser.getAllVariants(), "differenceInVariants");
-            variantWriter.writeDifferenceInVariantTypesToFile();
+            VariantWriter variantWriter = new VariantWriter("differenceInVariants");
+            variantWriter.writeDifferenceInVariantTypesToFile(variantParser);
         } catch (IOException e) {
             LOGGER.warn("Something went wrong while writing variants to file. Continuing program.");
         }

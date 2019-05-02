@@ -86,20 +86,4 @@ public class Variant implements Serializable {
     public void setRawInformation(String rawInformation) {
         this.rawInformation = rawInformation;
     }
-
-    public static Comparator<Variant> VariantComparator = new Comparator<Variant>() {
-        public int compare(Variant v1, Variant v2) {
-            return v1.getChromosome().compareTo(v2.getChromosome());
-        }
-    };
-//    private static void order (ArrayList<Variant> variants) {
-//        Collections.sort(variants, new Comparator<Variant>() {
-//            @Override
-//            public int compare(Variant o1, Variant o2) {
-//                return o1.getChromosome().compareTo(o2.getChromosome());
-//            }
-//        });
-//    }
-
-
 }
