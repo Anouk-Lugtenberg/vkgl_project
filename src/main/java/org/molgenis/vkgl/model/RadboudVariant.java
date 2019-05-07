@@ -84,11 +84,17 @@ public class RadboudVariant extends Variant implements Comparable<RadboudVariant
 
     @Override
     public int compareTo(RadboudVariant radboudVariant) {
-        return Comparators.START.compare(this, radboudVariant);
+        return Comparators.CHROMOSOME_AND_START.compare(this, radboudVariant);
     }
 
     public static class Comparators {
-        public static final Comparator<RadboudVariant> CHROMOSOME = Comparator.comparing(RadboudVariant::getChromosome);
-        public static final Comparator<RadboudVariant> START = CHROMOSOME.thenComparing(RadboudVariant::getStart);
+        public static final Comparator<RadboudVariant> CHROMOSOME_AND_START =
+                Comparator.comparing(RadboudVariant::getChromosome, Comparator.comparingInt(Comparators::extractInt))
+                .thenComparing(RadboudVariant::getStart);
+
+        static int extractInt(String chromosome) {
+            String num = chromosome.replaceAll("\\D", "");
+            return num.isEmpty() ? chromosome.charAt(0) : Integer.parseInt(num);
+        }
     }
 }

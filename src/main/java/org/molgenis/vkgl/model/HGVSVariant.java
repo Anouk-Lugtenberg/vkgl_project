@@ -1,6 +1,10 @@
 package org.molgenis.vkgl.model;
 
-public class HGVSVariant extends Variant {
+import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class HGVSVariant extends Variant implements Comparable<HGVSVariant> {
     private String referenceSequence;
     private String genomicDNA;
     private String genomicDNANormalized;
@@ -46,6 +50,33 @@ public class HGVSVariant extends Variant {
                 break;
             case "+":
                 this.classification = ClassificationType.PATHOGENIC;
+        }
+    }
+
+    @Override
+    public int compareTo(HGVSVariant hgvsVariant) {
+        return HGVSVariant.Comparators.CHROMOSOME_AND_POSITION.compare(this, hgvsVariant);
+    }
+
+    public static class Comparators {
+        public static final Comparator<HGVSVariant> CHROMOSOME_AND_POSITION =
+                Comparator.comparing(HGVSVariant::getChromosome, Comparator.comparingInt(Comparators::extractChromosome))
+                .thenComparing(HGVSVariant::getGenomicDNA, Comparator.comparingInt(Comparators::extractPosition));
+
+        static int extractChromosome(String chromosome) {
+            String num = chromosome.replaceAll("\\D", "");
+            return num.isEmpty() ? chromosome.charAt(0) : Integer.parseInt(num);
+        }
+
+        static int extractPosition(String genomicDNA) {
+            Pattern p = Pattern.compile("(\\d+)");
+            String[] stuff = genomicDNA.split(":");
+            Matcher m = p.matcher(stuff[1]);
+            if (m.find()) {
+                return Integer.parseInt(m.group(1));
+            } else {
+                return 0;
+            }
         }
     }
 }
