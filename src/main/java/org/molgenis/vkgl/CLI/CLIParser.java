@@ -4,10 +4,13 @@ import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.IO.DirectoryHandler;
+import org.molgenis.vkgl.IO.LoggerUpdater;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+
+import static org.apache.logging.log4j.core.lookup.MainMapLookup.setMainArguments;
 
 public class CLIParser {
     private static final Logger LOGGER = LogManager.getLogger(CLIParser.class.getName());
@@ -49,7 +52,9 @@ public class CLIParser {
                 help();
             } else if (cmd.hasOption("i")) {
                 setInputDirectory(directoryHandler.validDirectory(cmd.getOptionValue("i")));
+                LoggerUpdater.updateLogger(cmd.getOptionValue("i") + "/logs/log.txt", "log_files");
                 if (cmd.hasOption("o")) {
+
                     outputDirectory = directoryHandler.validDirectory(cmd.getOptionValue("o"));
                 } else {
                     //Creates new directory for normalized data if directory doesn't already exist.
@@ -73,7 +78,8 @@ public class CLIParser {
                 throw new IllegalArgumentException("Missing directory for input files.");
             }
         } catch (ParseException e){
-            LOGGER.error("Something went wrong while parsing the command line arguments" + e.getMessage());
+            LOGGER.error("Something went wrong while parsing the command line arguments " + e.getMessage());
+            help();
         }
     }
 
@@ -92,6 +98,10 @@ public class CLIParser {
      */
     public Path getOutputDirectory() {
         return outputDirectory;
+    }
+
+    public String getStringOutputDirectory() {
+        return outputDirectory.toString();
     }
 
     private void setOutputDirectory(Path outputDirectory) {

@@ -12,14 +12,23 @@
         "PatternLayout": {
           "pattern": "%d [%t] %-5p %c{1} - %m%n"
         }
+      },
+      "File": {
+        "name": "log_files",
+        "fileName": "logs/log.txt",
+        "PatternLayout": {
+          "pattern": "%d [%t] %-5p %c{1} - %m%n"
+        }
       }
     },
     "loggers": {
       "root": {
         "level": "debug",
-        "AppenderRef": {
+        "AppenderRef": [{
           "ref": "STDOUT"
-        }
+        },{
+          "ref": "log_files"
+        }]
       }
     }
   }

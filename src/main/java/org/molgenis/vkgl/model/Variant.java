@@ -1,10 +1,10 @@
 package org.molgenis.vkgl.model;
 
 import java.io.Serializable;
-import java.util.Comparator;
 
 public class Variant implements Serializable {
     String identifier;
+    int lineNumber;
     ClassificationType classification;
     VariantType variantType;
     private String chromosome;
@@ -19,6 +19,14 @@ public class Variant implements Serializable {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
     }
 
     public ClassificationType getClassification() {

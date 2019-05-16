@@ -4,8 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.CLI.CLIParser;
-import org.molgenis.vkgl.service.VariantFormat;
-import org.molgenis.vkgl.service.VariantFormatDeterminer;
 import org.molgenis.vkgl.service.VariantToVCFConverter;
 import org.molgenis.vkgl.service.VariantTypeCounter;
 
@@ -18,7 +16,7 @@ public class RawFileProcessor {
     private static final Logger LOGGER = LogManager.getLogger(RawFileProcessor.class.getName());
     private CLIParser CLIParser = new CLIParser();
     private VariantParser variantParser = new VariantParser();
-    private VariantToVCFConverter variantConverter = new VariantToVCFConverter();
+    private VariantToVCFConverter variantToVCFConverter = new VariantToVCFConverter();
 
     /**
      * Starts the processing of command line arguments.
@@ -31,12 +29,14 @@ public class RawFileProcessor {
         processFiles(inputDirectory);
 
         if (CLIParser.getWriteVariantTypesToFile()) {
-            startVariantWriter();
+            startVariantWriter(inputDirectory);
         }
 
         if (CLIParser.getCountVariantTypes()) {
             startVariantCounter();
         }
+
+        variantToVCFConverter.convertVariants(variantParser, CLIParser.getStringOutputDirectory());
     }
 
     /**
@@ -52,18 +52,16 @@ public class RawFileProcessor {
         while (iterator.hasNext()) {
             File file = iterator.next();
             LOGGER.info("Processing file: " + file);
-            VariantFormatDeterminer variantFormatDeterminer = new VariantFormatDeterminer();
-            VariantFormat variantFormat = variantFormatDeterminer.getVariantFormat(file.toString());
-            variantParser.parseFile(file, variantFormat);
+            variantParser.parseFile(file);
         }
     }
 
     /**
      * Starts the variant writer.
      */
-    private void startVariantWriter() {
+    private void startVariantWriter(Path directory) {
         try {
-            VariantWriter variantWriter = new VariantWriter("differenceInVariants");
+            VariantWriter variantWriter = new VariantWriter(directory.toString() + "/differenceInVariants");
             variantWriter.writeDifferenceInVariantTypesToFile(variantParser);
         } catch (IOException e) {
             LOGGER.warn("Something went wrong while writing variants to file. Continuing program.");
@@ -75,6 +73,5 @@ public class RawFileProcessor {
      */
     private void startVariantCounter() {
         new VariantTypeCounter(variantParser.getAllVariants());
-        variantConverter.convertVariants(variantParser.getAllVariants(), CLIParser.getOutputDirectory());
     }
 }

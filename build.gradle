@@ -35,6 +35,9 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
     extraLibs group: 'commons-cli', name: 'commons-cli', version: '1.2'
 
+    // https://mvnrepository.com/artifact/com.github.samtools/htsjdk
+    extraLibs group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
 
