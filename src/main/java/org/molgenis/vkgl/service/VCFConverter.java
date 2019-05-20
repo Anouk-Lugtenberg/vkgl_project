@@ -2,6 +2,8 @@ package org.molgenis.vkgl.service;
 
 import htsjdk.samtools.reference.IndexedFastaSequenceFile;
 import htsjdk.samtools.reference.ReferenceSequenceFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.model.VCFVariant;
 import org.molgenis.vkgl.model.Variant;
 
@@ -9,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 public interface VCFConverter {
+    Logger LOGGER = LogManager.getLogger(VCFConverter.class.getName());
     VCFVariant convertToVCF();
     VCFVariant convertSNP();
     VCFVariant convertInsertion();
@@ -45,11 +48,11 @@ public interface VCFConverter {
      */
     static boolean validateSNP(String referenceGenomeBuild, String REF, String ALT, Variant variant) {
         if (!referenceGenomeBuild.equals(REF)) {
-            System.out.println("\n referenceGenomeBuild: " + referenceGenomeBuild + "  does not equal given reference");
-            System.out.println("Variant: " + variant.getRawInformation());
+            LOGGER.info("\n" + variant.getLineNumber() + ": " + variant.getRawInformation());
+            LOGGER.info("Reference genome: " + referenceGenomeBuild + " does not equal reference given for Variant");
         } else if (REF.equals(ALT)) {
-            System.out.println("\n REF and ALT are the same, is not a Variant");
-            System.out.println("Raw information: " + variant.getRawInformation());
+            LOGGER.info("n" + variant.getLineNumber() + ": " + variant.getRawInformation());
+            LOGGER.info("\nREF and ALT are the same, is not a valid variant");
         }
         return referenceGenomeBuild.equals(REF) && !REF.equals(ALT);
     }

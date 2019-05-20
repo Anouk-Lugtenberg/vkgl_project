@@ -4,13 +4,10 @@ import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.IO.DirectoryHandler;
-import org.molgenis.vkgl.IO.LoggerUpdater;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-
-import static org.apache.logging.log4j.core.lookup.MainMapLookup.setMainArguments;
 
 public class CLIParser {
     private static final Logger LOGGER = LogManager.getLogger(CLIParser.class.getName());
@@ -52,7 +49,6 @@ public class CLIParser {
                 help();
             } else if (cmd.hasOption("i")) {
                 setInputDirectory(directoryHandler.validDirectory(cmd.getOptionValue("i")));
-                LoggerUpdater.updateLogger(cmd.getOptionValue("i") + "/logs/log.txt", "log_files");
                 if (cmd.hasOption("o")) {
 
                     outputDirectory = directoryHandler.validDirectory(cmd.getOptionValue("o"));

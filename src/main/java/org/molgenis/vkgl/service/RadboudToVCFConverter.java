@@ -50,11 +50,7 @@ public class RadboudToVCFConverter implements VCFConverter {
         boolean isValidVariant;
         try {
             String referenceGenomeBuild = VCFConverter.getBasesFromPosition("chr1", start, stop);
-            if (VCFConverter.validateSNP(referenceGenomeBuild, REF, ALT, radboudVariant)) {
-                isValidVariant = true;
-            } else {
-                isValidVariant = false;
-            }
+            isValidVariant = VCFConverter.validateSNP(referenceGenomeBuild, REF, ALT, radboudVariant);
         } catch (IllegalArgumentException e) {
             isValidVariant = false;
         }
@@ -94,8 +90,8 @@ public class RadboudToVCFConverter implements VCFConverter {
         if (REF.length() > 0) {
             String GRChREF = VCFConverter.getBasesFromPosition("chr1", start, stop);
             if (!GRChREF.equals(REF)) {
-                System.out.println("\nGRChREF: " + GRChREF + " does not equal: " + REF);
-                System.out.println("radboudVariant = " + radboudVariant.getRawInformation());
+                LOGGER.info("\n" + radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
+                LOGGER.info("Reference genome: " + GRChREF + " does not equal reference given for Variant");
                 deletionValid = false;
             }
         }
@@ -113,17 +109,32 @@ public class RadboudToVCFConverter implements VCFConverter {
         boolean validVariant;
         try {
             String GRChREF = VCFConverter.getBasesFromPosition("chr1", start, stop);
-            if (REF.length() > 0 && ALT.length() > 0) {
-                validVariant = REF.equals(GRChREF);
-            } else {
-                REF = GRChREF;
-                validVariant = ALT.length() > 0;
-            }
+            validVariant = validateDeletionInsertion(GRChREF);
         } catch (IllegalArgumentException e) {
             validVariant = false;
         }
         VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, radboudVariant);
         vcfVariant.setValidVariant(validVariant);
         return vcfVariant;
+    }
+
+    private boolean validateDeletionInsertion(String GRChREF) {
+        boolean validVariant;
+        if (REF.length() == 0) {
+            LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
+            LOGGER.info("No REF available for delins. Flagging as invalid variant\n");
+            validVariant = false;
+        } else if (ALT.length() == 0) {
+            LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
+            LOGGER.info("No ALT available for delins. Flagging as invalid variant\n");
+            validVariant = false;
+        } else if (!REF.equals(GRChREF)) {
+            LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
+            LOGGER.info("Reference genome: " + GRChREF + " does not equal reference given for Variant\n");
+            validVariant = false;
+        } else {
+            validVariant = true;
+        }
+        return validVariant;
     }
 }

@@ -49,7 +49,7 @@ public class DirectoryHandler {
      * @param directory the directory to clean.
      */
     public void emptyDirectory(Path directory) {
-        LOGGER.info("Emptying: " + directory);
+        LOGGER.debug("Emptying: " + directory);
         try {
             FileUtils.cleanDirectory(directory.toFile());
         } catch (IOException e) {

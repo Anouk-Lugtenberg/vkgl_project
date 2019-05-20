@@ -41,8 +41,10 @@ public class VariantWriter {
 
             for (VCFVariant vcfVariant : vcfVariants) {
                 if (vcfVariant != null) {
-                    String line = createVCFVariantLine(vcfVariant);
-                    bufferedWriter.write(line);
+                    if (vcfVariant.isValidVariant()) {
+                        String line = createVCFVariantLine(vcfVariant);
+                        bufferedWriter.write(line);
+                    }
                 }
             }
             bufferedWriter.close();

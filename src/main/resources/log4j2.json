@@ -15,7 +15,11 @@
       },
       "File": {
         "name": "log_files",
-        "fileName": "logs/log.txt",
+        "ThresholdFilter": {
+          "level": "info"
+        },
+        "Append": "false",
+        "fileName": "${main:inputDirectory}/logs/variant_errors.txt",
         "PatternLayout": {
           "pattern": "%d [%t] %-5p %c{1} - %m%n"
         }
@@ -26,7 +30,7 @@
         "level": "debug",
         "AppenderRef": [{
           "ref": "STDOUT"
-        },{
+        }, {
           "ref": "log_files"
         }]
       }

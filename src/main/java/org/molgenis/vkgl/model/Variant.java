@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Variant implements Serializable {
     String identifier;
-    int lineNumber;
+    private int lineNumber;
     ClassificationType classification;
     VariantType variantType;
     private String chromosome;
