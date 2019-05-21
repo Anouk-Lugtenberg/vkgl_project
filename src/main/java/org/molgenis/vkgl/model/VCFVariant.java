@@ -8,13 +8,16 @@ public class VCFVariant {
     private String ALT;
     private String REF;
     private boolean validVariant;
+    private ClassificationType classification;
     private Variant rawVariant;
 
-    public VCFVariant(String chromosome, int position, String REF, String ALT, Variant rawVariant) {
+    public VCFVariant(String chromosome, int position, String REF, String ALT, ClassificationType classification, Variant rawVariant) {
         this.chromosome = chromosome;
         this.position = position;
         this.REF = REF;
         this.ALT = ALT;
+        this.classification = classification;
+        this.rawVariant = rawVariant;
     }
 
     public String getChromosome() {
@@ -41,13 +44,14 @@ public class VCFVariant {
         this.validVariant = validVariant;
     }
 
+    public ClassificationType getClassification() {
+        return classification;
+    }
+
     public Variant getRawVariant() {
         return rawVariant;
     }
 
-    public void setRawVariant(Variant rawVariant) {
-        this.rawVariant = rawVariant;
-    }
 
     public int compareTo(VCFVariant vcfVariant) {
         return Comparators.CHROMOSOME_AND_POSITION.compare(this, vcfVariant);

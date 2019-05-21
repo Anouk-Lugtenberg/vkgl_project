@@ -42,7 +42,7 @@ public class HGVSToVCFConverter implements VCFConverter {
         String REF = referenceAndAlternative.getReference();
         String ALT = referenceAndAlternative.getAlternative();
         String GRCh37Reference = VCFConverter.getBasesFromPosition("chr1", start, start);
-        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, HGVSVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, HGVSVariant.getClassification(), HGVSVariant);
         if (VCFConverter.validateSNP(GRCh37Reference, REF, ALT, HGVSVariant)) {
             vcfVariant.setValidVariant(true);
         } else {
@@ -84,7 +84,7 @@ public class HGVSToVCFConverter implements VCFConverter {
         String ALT = getAlternativeInsertion();
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition("chr1", startAndStop.getStart(), startAndStop.getStart());
         String newALT = referenceGenomeBuild + ALT;
-        VCFVariant vcfVariant = new VCFVariant(chromosome, startAndStop.getStart(), referenceGenomeBuild, newALT, HGVSVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, startAndStop.getStart(), referenceGenomeBuild, newALT, HGVSVariant.getClassification(), HGVSVariant);
         vcfVariant.setValidVariant(validateInsertion());
         return vcfVariant;
     }
@@ -127,6 +127,11 @@ public class HGVSToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertDeletionInsertion() {
+        return null;
+    }
+
+    @Override
+    public org.molgenis.vkgl.model.VCFVariant convertNotClassified() {
         return null;
     }
 }

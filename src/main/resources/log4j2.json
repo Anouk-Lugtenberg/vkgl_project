@@ -21,7 +21,7 @@
         "Append": "false",
         "fileName": "${main:inputDirectory}/logs/variant_errors.txt",
         "PatternLayout": {
-          "pattern": "%d [%t] %-5p %c{1} - %m%n"
+          "pattern": "%m%n"
         }
       }
     },

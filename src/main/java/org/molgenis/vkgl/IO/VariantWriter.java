@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VariantWriter {
-    private static final Logger LOGGER = LogManager.getLogger(CLIParser.class.getName());
     private Path directoryToWrite;
     private DirectoryHandler directoryHandler = new DirectoryHandler();
 
@@ -36,16 +35,9 @@ public class VariantWriter {
 
             File vcfFile = directoryHandler.createFile(nameUMC + ".vcf", directoryToWrite);
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(vcfFile));
-
-            vcfVariants.sort(VCFVariant.Comparators.CHROMOSOME_AND_POSITION);
-
             for (VCFVariant vcfVariant : vcfVariants) {
-                if (vcfVariant != null) {
-                    if (vcfVariant.isValidVariant()) {
-                        String line = createVCFVariantLine(vcfVariant);
-                        bufferedWriter.write(line);
-                    }
-                }
+                String line = createVCFVariantLine(vcfVariant);
+                bufferedWriter.write(line);
             }
             bufferedWriter.close();
         }
@@ -56,7 +48,8 @@ public class VariantWriter {
                 "\t" + variant.getPosition() +
                 "\t" + "." +
                 "\t" + variant.getREF() +
-                "\t" + variant.getALT() + "\n";
+                "\t" + variant.getALT() +
+                "\t" + variant.getClassification() + "\n";
 //                "\t" + variant.isValidVariant() + "\n";
     }
 

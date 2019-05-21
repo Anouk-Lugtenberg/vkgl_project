@@ -1,5 +1,6 @@
 package org.molgenis.vkgl.service;
 
+import org.molgenis.vkgl.model.ClassificationType;
 import org.molgenis.vkgl.model.RadboudVariant;
 import org.molgenis.vkgl.model.VCFVariant;
 
@@ -11,6 +12,7 @@ public class RadboudToVCFConverter implements VCFConverter {
     private int stop;
     private String REF;
     private String ALT;
+    private ClassificationType classification;
 
     public RadboudToVCFConverter(RadboudVariant radboudVariant) {
         this.radboudVariant = radboudVariant;
@@ -19,6 +21,7 @@ public class RadboudToVCFConverter implements VCFConverter {
         this.stop = radboudVariant.getStop();
         this.REF = radboudVariant.getREF();
         this.ALT = radboudVariant.getALT();
+        this.classification = radboudVariant.getClassification();
     }
 
     @Override
@@ -40,6 +43,7 @@ public class RadboudToVCFConverter implements VCFConverter {
                 VCFVariant = convertDeletionInsertion();
                 break;
             case NOT_CLASSIFIED:
+                VCFVariant = convertNotClassified();
                 break;
         }
         return VCFVariant;
@@ -54,7 +58,7 @@ public class RadboudToVCFConverter implements VCFConverter {
         } catch (IllegalArgumentException e) {
             isValidVariant = false;
         }
-        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, radboudVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, classification, radboudVariant);
         vcfVariant.setValidVariant(isValidVariant);
         return vcfVariant;
     }
@@ -63,7 +67,7 @@ public class RadboudToVCFConverter implements VCFConverter {
     public VCFVariant convertInsertion() {
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition("chr1", start, stop);
         String newALT = referenceGenomeBuild + ALT;
-        VCFVariant vcfVariant = new VCFVariant(chromosome, start, referenceGenomeBuild, newALT, radboudVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, start, referenceGenomeBuild, newALT, classification, radboudVariant);
         vcfVariant.setValidVariant(validateInsertion());
         return vcfVariant;
     }
@@ -80,7 +84,7 @@ public class RadboudToVCFConverter implements VCFConverter {
 
         String newALT = VCFConverter.getBasesFromPosition("chr1", startPosition, startPosition);
         String newREF = VCFConverter.getBasesFromPosition("chr1", startPosition, stop);
-        VCFVariant vcfVariant = new VCFVariant(chromosome, startPosition, newREF, newALT, radboudVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, startPosition, newREF, newALT, classification, radboudVariant);
         vcfVariant.setValidVariant(validateDeletion());
         return vcfVariant;
     }
@@ -90,8 +94,8 @@ public class RadboudToVCFConverter implements VCFConverter {
         if (REF.length() > 0) {
             String GRChREF = VCFConverter.getBasesFromPosition("chr1", start, stop);
             if (!GRChREF.equals(REF)) {
-                LOGGER.info("\n" + radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
-                LOGGER.info("Reference genome: " + GRChREF + " does not equal reference given for Variant");
+                LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
+                LOGGER.info("Reference genome: " + GRChREF + " does not equal reference given for variant:" + REF + ". Flagging as invalid.\n");
                 deletionValid = false;
             }
         }
@@ -113,7 +117,7 @@ public class RadboudToVCFConverter implements VCFConverter {
         } catch (IllegalArgumentException e) {
             validVariant = false;
         }
-        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, radboudVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, classification, radboudVariant);
         vcfVariant.setValidVariant(validVariant);
         return vcfVariant;
     }
@@ -122,19 +126,28 @@ public class RadboudToVCFConverter implements VCFConverter {
         boolean validVariant;
         if (REF.length() == 0) {
             LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
-            LOGGER.info("No REF available for delins. Flagging as invalid variant\n");
+            LOGGER.info("No REF available for delins. Flagging as invalid.\n");
             validVariant = false;
         } else if (ALT.length() == 0) {
             LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
-            LOGGER.info("No ALT available for delins. Flagging as invalid variant\n");
+            LOGGER.info("No ALT available for delins. Flagging as invalid.\n");
             validVariant = false;
         } else if (!REF.equals(GRChREF)) {
             LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
-            LOGGER.info("Reference genome: " + GRChREF + " does not equal reference given for Variant\n");
+            LOGGER.info("Reference genome: " + GRChREF + " does not equal reference given for variant: " + REF +". Flagging as invalid.\n");
             validVariant = false;
         } else {
             validVariant = true;
         }
         return validVariant;
+    }
+
+    @Override
+    public VCFVariant convertNotClassified() {
+        LOGGER.info(radboudVariant.getLineNumber() + ": " + radboudVariant.getRawInformation());
+        LOGGER.info("Variant could not be classified. Flagging as invalid.\n");
+        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, classification, radboudVariant);
+        vcfVariant.setValidVariant(false);
+        return vcfVariant;
     }
 }
