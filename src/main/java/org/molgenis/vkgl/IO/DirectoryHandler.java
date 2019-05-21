@@ -59,6 +59,7 @@ public class DirectoryHandler {
     }
 
     public File createFile(String file, Path directory) {
+        LOGGER.debug("Creating file: " + directory + File.separator + file);
         return new File(directory + File.separator + file);
     }
 }

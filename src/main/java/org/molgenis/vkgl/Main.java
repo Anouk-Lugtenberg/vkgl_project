@@ -1,18 +1,11 @@
 package org.molgenis.vkgl;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.lookup.MainMapLookup;
-import org.molgenis.vkgl.CLI.CLIParser;
 import org.molgenis.vkgl.IO.RawFileProcessor;
-
-import java.io.FileNotFoundException;
 
 import static org.apache.logging.log4j.core.lookup.MainMapLookup.setMainArguments;
 
 public class Main {
     public static void main(String[] args) {
-        Logger LOGGER = LogManager.getLogger(Main.class.getName());
         try {
             MainMapLookup mml = new MainMapLookup();
             //Log4j2 contains a bug for command line arguments prefixed with "-".
@@ -33,13 +26,12 @@ public class Main {
                 argsForLog[0] = "inputDirectory";
                 argsForLog[1] = inputDirectory;
                 setMainArguments(argsForLog);
-
-                //Only process file if user has given an input directory.
-                RawFileProcessor rawFileProcessor = new RawFileProcessor();
-                rawFileProcessor.start(args);
             }
         } catch (NullPointerException e) {
-            LOGGER.error("Please specify an input directory.");
+            //The errors which are caused when the user did not specify an input file are handled
+            //in CLI parser. Try block is only for setting the place for the log-file not for handling errors.
+            RawFileProcessor rawFileProcessor = new RawFileProcessor();
+            rawFileProcessor.start(args);
         }
     }
 }
