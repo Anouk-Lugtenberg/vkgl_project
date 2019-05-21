@@ -105,7 +105,8 @@ public class VariantToVCFConverter {
 
     private void validateVariants() {
         VariantValidator variantValidator = new VariantValidator(VCFVariantsPerUMC);
-        variantValidator.startValidating();
+        variantValidator.checkDoubleVCFNotations();
+        removeInvalidVariants();
     }
 
     /**

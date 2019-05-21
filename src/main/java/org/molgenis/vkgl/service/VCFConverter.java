@@ -50,10 +50,10 @@ public interface VCFConverter {
     static boolean validateSNP(String referenceGenomeBuild, String REF, String ALT, Variant variant) {
         if (!referenceGenomeBuild.equals(REF)) {
             LOGGER.info(variant.getLineNumber() + ": " + variant.getRawInformation());
-            LOGGER.info("Reference genome: " + referenceGenomeBuild + " does not equal reference given for variant: " + REF + "\n");
+            LOGGER.info("Reference genome: " + referenceGenomeBuild + " does not equal reference given for variant: " + REF + ". Flagging as invalid.\n");
         } else if (REF.equals(ALT)) {
             LOGGER.info(variant.getLineNumber() + ": " + variant.getRawInformation());
-            LOGGER.info("REF and ALT are the same, is not a valid variant\n");
+            LOGGER.info("REF and ALT are the same, is not a valid SNP.\n");
         }
         return referenceGenomeBuild.equals(REF) && !REF.equals(ALT);
     }

@@ -36,6 +36,8 @@ public class CLIParser {
      * - 'inputDirectory': The directory of the input files.
      * - 'outputDirectory': The directory of the output files.
      * - 'cleanRun': A clean run of the program, meaning: the output directory will be emptied and the program runs for all the variants.
+     * @param args the arguments from the command line.
+     * @throws IllegalArgumentException when no inputDirectory is specified by the user.
      */
     public void parseCLI(String[] args) {
         CommandLineParser parser = new BasicParser();
