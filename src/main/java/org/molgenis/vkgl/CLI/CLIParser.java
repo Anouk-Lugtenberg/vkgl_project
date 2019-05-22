@@ -12,7 +12,7 @@ import java.nio.file.Path;
 public class CLIParser {
     private static final Logger LOGGER = LogManager.getLogger(CLIParser.class.getName());
     private Options options = new Options();
-    private static Path inputDirectory;
+    private Path inputDirectory;
     private Path outputDirectory;
     private boolean writeVariantTypesToFile = false;
     private boolean countVariantTypes = false;
@@ -59,7 +59,7 @@ public class CLIParser {
                     try {
                         outputDirectory = directoryHandler.createDirectory(inputDirectory + File.separator + dirNameNormalizedData);
                     } catch (IOException e) {
-                        LOGGER.error("Something went wrong while creating: " + outputDirectory);
+                        LOGGER.error("Something went wrong while creating: {}", outputDirectory);
                     }
                 }
                 setOutputDirectory(outputDirectory);
@@ -76,7 +76,7 @@ public class CLIParser {
                 throw new IllegalArgumentException("Missing directory for input files.");
             }
         } catch (ParseException e){
-            LOGGER.error("Something went wrong while parsing the command line arguments " + e.getMessage());
+            LOGGER.error("Something went wrong while parsing the command line arguments {}", e.getMessage());
             help();
         }
     }
@@ -110,9 +110,7 @@ public class CLIParser {
         return inputDirectory;
     }
 
-    private void setInputDirectory(Path inputDirectory) {
-        this.inputDirectory = inputDirectory;
-    }
+    private void setInputDirectory(Path inputDirectory) { this.inputDirectory = inputDirectory; }
 
     public boolean getWriteVariantTypesToFile() { return writeVariantTypesToFile; }
     public boolean getCountVariantTypes() { return countVariantTypes; }

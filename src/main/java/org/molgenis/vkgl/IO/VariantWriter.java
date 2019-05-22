@@ -1,7 +1,6 @@
 package org.molgenis.vkgl.IO;
 
 import org.molgenis.vkgl.model.*;
-import org.molgenis.vkgl.model.variants.*;
 
 import java.io.BufferedWriter;
 import java.io.File;

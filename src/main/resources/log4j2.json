@@ -19,7 +19,7 @@
           "level": "info"
         },
         "Append": "false",
-        "fileName": "${main:inputDirectory:-logs/errors.txt}/logs/variant_errors.txt",
+        "fileName": "${main:inputDirectory:-logs}/logs/log_variants.txt",
         "PatternLayout": {
           "pattern": "%m%n"
         }

@@ -5,5 +5,6 @@ public enum ClassificationType {
     LIKELY_BENIGN,
     VOUS,
     LIKELY_PATHOGENIC,
-    PATHOGENIC
+    PATHOGENIC,
+    UNKNOWN_TYPE
 }

@@ -1,7 +1,4 @@
-package org.molgenis.vkgl.model.variants;
-
-import org.molgenis.vkgl.model.ClassificationType;
-import org.molgenis.vkgl.model.VariantType;
+package org.molgenis.vkgl.model;
 
 public class CartageniaVariant extends RadboudVariant {
     String timestamp;
@@ -68,6 +65,9 @@ public class CartageniaVariant extends RadboudVariant {
             case "PATHOGENIC":
                 this.classification = ClassificationType.PATHOGENIC;
                 break;
+            default:
+                this.classification = ClassificationType.UNKNOWN_TYPE;
+                break;
         }
     }
 
@@ -77,11 +77,11 @@ public class CartageniaVariant extends RadboudVariant {
             case "snp":
                 this.variantType = VariantType.SNP;
                 break;
-            case "deletion":
-                this.variantType = VariantType.DELETION;
-                break;
             case "insertion":
                 this.variantType = VariantType.INSERTION;
+                break;
+            case "deletion":
+                this.variantType = VariantType.DELETION;
                 break;
             // They've called these kind of variants substitutions, but for clarification it's called a deletion_insertion here.
             // One (or multiple bases) are substituted by other base(s).

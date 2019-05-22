@@ -1,6 +1,4 @@
-package org.molgenis.vkgl.model.variants;
-
-import org.molgenis.vkgl.model.ClassificationType;
+package org.molgenis.vkgl.model;
 
 import java.util.Comparator;
 import java.util.regex.Matcher;
@@ -52,6 +50,9 @@ public class HGVSVariant extends Variant implements Comparable<HGVSVariant> {
                 break;
             case "+":
                 this.classification = ClassificationType.PATHOGENIC;
+                break;
+            default:
+                this.classification = ClassificationType.UNKNOWN_TYPE;
         }
     }
 
@@ -65,15 +66,17 @@ public class HGVSVariant extends Variant implements Comparable<HGVSVariant> {
                 Comparator.comparing(HGVSVariant::getChromosome, Comparator.comparingInt(Comparators::extractChromosome))
                 .thenComparing(HGVSVariant::getGenomicDNA, Comparator.comparingInt(Comparators::extractPosition));
 
+        //Chromosome can be integer or String X/Y/M
         static int extractChromosome(String chromosome) {
             String num = chromosome.replaceAll("\\D", "");
+            //If no number found, character (X/Y/M) of chromosome is used
             return num.isEmpty() ? chromosome.charAt(0) : Integer.parseInt(num);
         }
 
+        //Position is part of the genomic DNA in HGVS Variants
         static int extractPosition(String genomicDNA) {
             Pattern p = Pattern.compile("(\\d+)");
-            String[] stuff = genomicDNA.split(":");
-            Matcher m = p.matcher(stuff[1]);
+            Matcher m = p.matcher(genomicDNA.split(":")[1]);
             if (m.find()) {
                 return Integer.parseInt(m.group(1));
             } else {

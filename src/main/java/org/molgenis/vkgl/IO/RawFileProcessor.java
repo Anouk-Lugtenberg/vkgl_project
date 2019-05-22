@@ -36,7 +36,7 @@ public class RawFileProcessor {
             startVariantCounter();
         }
 
-        variantToVCFConverter.convertVariants(variantParser, CLIParser.getStringOutputDirectory());
+//        variantToVCFConverter.convertVariants(variantParser, CLIParser.getStringOutputDirectory());
     }
 
     /**

@@ -1,6 +1,4 @@
-package org.molgenis.vkgl.model.variants;
-
-import org.molgenis.vkgl.model.ClassificationType;
+package org.molgenis.vkgl.model;
 
 import java.util.Comparator;
 

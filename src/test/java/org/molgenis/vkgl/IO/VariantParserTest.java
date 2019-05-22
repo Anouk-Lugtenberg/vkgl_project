@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.molgenis.vkgl.LogAppenderResource;
-import org.molgenis.vkgl.model.variants.CartageniaVariant;
-import org.molgenis.vkgl.model.variants.HGVSVariant;
-import org.molgenis.vkgl.model.variants.RadboudVariant;
+import org.molgenis.vkgl.model.CartageniaVariant;
+import org.molgenis.vkgl.model.HGVSVariant;
+import org.molgenis.vkgl.model.RadboudVariant;
 
 import java.io.File;
 import java.util.ArrayList;

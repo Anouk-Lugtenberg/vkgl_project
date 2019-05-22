@@ -3,10 +3,10 @@ package org.molgenis.vkgl.IO;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.model.variants.CartageniaVariant;
-import org.molgenis.vkgl.model.variants.HGVSVariant;
-import org.molgenis.vkgl.model.variants.RadboudVariant;
-import org.molgenis.vkgl.model.variants.Variant;
+import org.molgenis.vkgl.model.CartageniaVariant;
+import org.molgenis.vkgl.model.HGVSVariant;
+import org.molgenis.vkgl.model.RadboudVariant;
+import org.molgenis.vkgl.model.Variant;
 import org.molgenis.vkgl.service.VariantFormat;
 import org.molgenis.vkgl.service.VariantFormatDeterminer;
 

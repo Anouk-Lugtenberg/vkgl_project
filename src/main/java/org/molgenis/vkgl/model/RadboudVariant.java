@@ -1,6 +1,4 @@
-package org.molgenis.vkgl.model.variants;
-
-import org.molgenis.vkgl.model.ClassificationType;
+package org.molgenis.vkgl.model;
 
 import java.util.Comparator;
 
@@ -81,6 +79,8 @@ public class RadboudVariant extends Variant implements Comparable<RadboudVariant
             case "5":
                 this.classification = ClassificationType.PATHOGENIC;
                 break;
+            default:
+                this.classification = ClassificationType.UNKNOWN_TYPE;
         }
     }
 
