@@ -2,7 +2,7 @@ package org.molgenis.vkgl.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.model.Variant;
+import org.molgenis.vkgl.model.variants.Variant;
 
 import java.util.ArrayList;
 import java.util.Map;

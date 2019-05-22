@@ -1,4 +1,7 @@
-package org.molgenis.vkgl.model;
+package org.molgenis.vkgl.model.variants;
+
+import org.molgenis.vkgl.model.ClassificationType;
+import org.molgenis.vkgl.model.VariantType;
 
 import java.io.Serializable;
 

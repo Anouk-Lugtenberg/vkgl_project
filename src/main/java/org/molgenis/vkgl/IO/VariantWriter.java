@@ -1,9 +1,7 @@
 package org.molgenis.vkgl.IO;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.CLI.CLIParser;
 import org.molgenis.vkgl.model.*;
+import org.molgenis.vkgl.model.variants.*;
 
 import java.io.BufferedWriter;
 import java.io.File;

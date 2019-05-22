@@ -1,9 +1,9 @@
 package org.molgenis.vkgl.service;
 
-import org.molgenis.vkgl.model.HGVSVariant;
+import org.molgenis.vkgl.model.variants.HGVSVariant;
 import org.molgenis.vkgl.model.ReferenceAndAlternative;
 import org.molgenis.vkgl.model.StartAndStopPosition;
-import org.molgenis.vkgl.model.VCFVariant;
+import org.molgenis.vkgl.model.variants.VCFVariant;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -131,7 +131,7 @@ public class HGVSToVCFConverter implements VCFConverter {
     }
 
     @Override
-    public org.molgenis.vkgl.model.VCFVariant convertNotClassified() {
+    public org.molgenis.vkgl.model.variants.VCFVariant convertNotClassified() {
         return null;
     }
 }

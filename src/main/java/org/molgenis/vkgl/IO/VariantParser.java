@@ -3,10 +3,10 @@ package org.molgenis.vkgl.IO;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.model.CartageniaVariant;
-import org.molgenis.vkgl.model.HGVSVariant;
-import org.molgenis.vkgl.model.RadboudVariant;
-import org.molgenis.vkgl.model.Variant;
+import org.molgenis.vkgl.model.variants.CartageniaVariant;
+import org.molgenis.vkgl.model.variants.HGVSVariant;
+import org.molgenis.vkgl.model.variants.RadboudVariant;
+import org.molgenis.vkgl.model.variants.Variant;
 import org.molgenis.vkgl.service.VariantFormat;
 import org.molgenis.vkgl.service.VariantFormatDeterminer;
 
@@ -68,6 +68,10 @@ public class VariantParser {
                     if (lineCount != 1) {
                         LOGGER.error("Line " + lineCount + " of " + file + " could not be processed. Please check the syntax.");
                         LOGGER.error(line);
+                    } else {
+                        //Some of the files contain headers, those should be skipped.
+                        LOGGER.info("Line " + lineCount + " of " + file + " could not be processed. Probably header, skipping line.");
+                        LOGGER.info(line);
                     }
                 }
             }
@@ -75,7 +79,6 @@ public class VariantParser {
             LOGGER.error("Something went wrong while parsing file: " + file);
             LOGGER.info(e.getMessage());
         }
-
         switch(variantFormat) {
             case RADBOUD:
                 radboudVariants.put(nameUMC, listRadboudVariants);
@@ -112,25 +115,20 @@ public class VariantParser {
     }
 
     private HGVSVariant createHGVSVariant(String line, int lineCount) {
-        try {
-            HGVSVariant HGVSVariant = new HGVSVariant();
-            String[] columns = line.split("\t");
-            HGVSVariant.setReferenceSequence(columns[0]);
-            HGVSVariant.setChromosome(columns[1]);
-            HGVSVariant.setGenomicDNA(columns[2]);
-            HGVSVariant.setGenomicDNANormalized(columns[3]);
-            HGVSVariant.setClassification(columns[4]);
-            HGVSVariant.setGeneName(columns[5]);
-            HGVSVariant.setcDNANotation(columns[6]);
-            HGVSVariant.setProteinNotation(columns[7]);
-            HGVSVariant.setVariantType(HGVSVariant.getGenomicDNA());
-            HGVSVariant.setRawInformation(line);
-            HGVSVariant.setLineNumber(lineCount);
-            return HGVSVariant;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.info("Line: " + line);
-            return null;
-        }
+        HGVSVariant HGVSVariant = new HGVSVariant();
+        String[] columns = line.split("\t");
+        HGVSVariant.setReferenceSequence(columns[0]);
+        HGVSVariant.setChromosome(columns[1]);
+        HGVSVariant.setGenomicDNA(columns[2]);
+        HGVSVariant.setGenomicDNANormalized(columns[3]);
+        HGVSVariant.setClassification(columns[4]);
+        HGVSVariant.setGeneName(columns[5]);
+        HGVSVariant.setcDNANotation(columns[6]);
+        HGVSVariant.setProteinNotation(columns[7]);
+        HGVSVariant.setVariantType(HGVSVariant.getGenomicDNA());
+        HGVSVariant.setRawInformation(line);
+        HGVSVariant.setLineNumber(lineCount);
+        return HGVSVariant;
     }
 
     private CartageniaVariant createCartageniaVariant(String line, int lineCount) {

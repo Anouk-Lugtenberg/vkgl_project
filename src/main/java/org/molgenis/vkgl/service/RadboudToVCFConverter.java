@@ -1,8 +1,8 @@
 package org.molgenis.vkgl.service;
 
 import org.molgenis.vkgl.model.ClassificationType;
-import org.molgenis.vkgl.model.RadboudVariant;
-import org.molgenis.vkgl.model.VCFVariant;
+import org.molgenis.vkgl.model.variants.RadboudVariant;
+import org.molgenis.vkgl.model.variants.VCFVariant;
 
 public class RadboudToVCFConverter implements VCFConverter {
     private RadboudVariant radboudVariant;

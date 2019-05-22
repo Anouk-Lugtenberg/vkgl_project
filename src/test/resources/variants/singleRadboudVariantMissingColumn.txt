@@ -1,0 +1,2 @@
+chr1	1	2	REF	ALT	geneName	cDNANotation	transcript	proteinNotation			exon		class 1
+chr1	1	2	REF	ALT	geneName	cDNANotation	transcript	proteinNotation		   		class 1

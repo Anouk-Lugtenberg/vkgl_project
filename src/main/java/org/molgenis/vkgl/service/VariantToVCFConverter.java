@@ -4,10 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.IO.VariantParser;
 import org.molgenis.vkgl.IO.VariantWriter;
-import org.molgenis.vkgl.model.CartageniaVariant;
-import org.molgenis.vkgl.model.HGVSVariant;
-import org.molgenis.vkgl.model.RadboudVariant;
-import org.molgenis.vkgl.model.VCFVariant;
+import org.molgenis.vkgl.model.variants.CartageniaVariant;
+import org.molgenis.vkgl.model.variants.HGVSVariant;
+import org.molgenis.vkgl.model.variants.RadboudVariant;
+import org.molgenis.vkgl.model.variants.VCFVariant;
 
 import java.io.*;
 import java.util.ArrayList;

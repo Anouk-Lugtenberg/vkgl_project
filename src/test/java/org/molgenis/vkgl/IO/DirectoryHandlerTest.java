@@ -1,11 +1,8 @@
 package org.molgenis.vkgl.IO;
 
-import org.apache.logging.log4j.LogManager;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.molgenis.vkgl.LogAppenderResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,17 +11,9 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DirectoryHandlerTest {
+class DirectoryHandlerTest {
 
-    //Used for testing the output of Log4j2.
-    private LogAppenderResource appender = new LogAppenderResource(LogManager.getLogger(DirectoryHandler.class.getName()));
     private DirectoryHandler directoryHandler = new DirectoryHandler();
-
-    @BeforeEach
-    void init() {appender.before();}
-
-    @AfterEach
-    void stop() {appender.after();}
 
     @Test
     void validDirectoryReturnsPathIfValid(@TempDir Path expectedPath) {

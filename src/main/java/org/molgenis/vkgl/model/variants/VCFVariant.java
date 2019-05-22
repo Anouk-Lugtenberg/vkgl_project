@@ -1,4 +1,6 @@
-package org.molgenis.vkgl.model;
+package org.molgenis.vkgl.model.variants;
+
+import org.molgenis.vkgl.model.ClassificationType;
 
 import java.util.Comparator;
 
@@ -50,11 +52,6 @@ public class VCFVariant {
 
     public Variant getRawVariant() {
         return rawVariant;
-    }
-
-
-    public int compareTo(VCFVariant vcfVariant) {
-        return Comparators.CHROMOSOME_AND_POSITION.compare(this, vcfVariant);
     }
 
     public static class Comparators {

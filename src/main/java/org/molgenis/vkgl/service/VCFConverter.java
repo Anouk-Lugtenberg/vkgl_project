@@ -4,8 +4,8 @@ import htsjdk.samtools.reference.IndexedFastaSequenceFile;
 import htsjdk.samtools.reference.ReferenceSequenceFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.model.VCFVariant;
-import org.molgenis.vkgl.model.Variant;
+import org.molgenis.vkgl.model.variants.VCFVariant;
+import org.molgenis.vkgl.model.variants.Variant;
 
 import java.io.File;
 import java.io.FileNotFoundException;

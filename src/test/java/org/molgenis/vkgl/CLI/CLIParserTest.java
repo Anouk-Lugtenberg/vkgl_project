@@ -23,9 +23,7 @@ class CLIParserTest {
     private CLIParser CLIParser = new CLIParser();
 
     @BeforeEach
-    void init() {
-        appender.before();
-    }
+    void init() { appender.before(); }
 
     @AfterEach
     void close() {
@@ -126,6 +124,7 @@ class CLIParserTest {
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         CLIParser.parseCLI(args);
+
         assertThat(appender.getOutput(), containsString("Directory: " + file + " already exists, not creating it again."));
     }
 }
