@@ -130,23 +130,6 @@ public class VariantParser {
         return HGVSVariant;
     }
 
-//    private HGVSVariant createHGVSVariant(String line, int lineCount) {
-//        HGVSVariant HGVSVariant = new HGVSVariant();
-//        String[] columns = line.split("\t");
-//        HGVSVariant.setReferenceSequence(columns[0]);
-//        HGVSVariant.setChromosome(columns[1]);
-//        HGVSVariant.setGenomicDNA(columns[2]);
-//        HGVSVariant.setGenomicDNANormalized(columns[3]);
-//        HGVSVariant.setClassification(columns[4]);
-//        HGVSVariant.setGeneName(columns[5]);
-//        HGVSVariant.setcDNANotation(columns[6]);
-//        HGVSVariant.setProteinNotation(columns[7]);
-//        HGVSVariant.setVariantType(HGVSVariant.getGenomicDNA());
-//        HGVSVariant.setRawInformation(line);
-//        HGVSVariant.setLineNumber(lineCount);
-//        return HGVSVariant;
-//    }
-
     private CartageniaVariant createCartageniaVariant(String line, int lineCount) {
         CartageniaVariant cartageniaVariant = new CartageniaVariant();
         String[] columns = line.split("\t");
