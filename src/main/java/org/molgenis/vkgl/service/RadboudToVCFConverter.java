@@ -2,7 +2,6 @@ package org.molgenis.vkgl.service;
 
 import org.molgenis.vkgl.model.ClassificationType;
 import org.molgenis.vkgl.model.RadboudVariant;
-import org.molgenis.vkgl.model.StartAndStopPosition;
 import org.molgenis.vkgl.model.VCFVariant;
 
 public class RadboudToVCFConverter implements VCFConverter {
@@ -66,40 +65,37 @@ public class RadboudToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertInsertion() {
-        StartAndStopPosition newStartAndStop;
+        int position;
         if (ALT.length() == 1) {
-            newStartAndStop = moveNucleotidesMostLeftPosition(ALT);
+            position = moveNucleotidesMostLeftPosition(ALT);
         } else if (ALT.chars().allMatch(c -> c == ALT.charAt(0))) {
             //Substring from first base of ALT, because all the nucleotides are the same in the ALT.
-            newStartAndStop = moveNucleotidesMostLeftPosition(ALT.substring(0, 1));
+            position = moveNucleotidesMostLeftPosition(ALT.substring(0, 1));
         } else {
             //TODO: ALT which aren't of length 1 or are the same nucleotides aren't processed yet.
-            newStartAndStop = new StartAndStopPosition(start, stop);
+            position = start;
         }
-        if (newStartAndStop.getStart() != start) {
+        if (position != start) {
             LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}", start, newStartAndStop.getStart());
-            start = newStartAndStop.getStart();
-            stop = newStartAndStop.getStop();
+            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}", start, position);
         }
-        String referenceGenomeBuild = VCFConverter.getBasesFromPosition("chr1", start, stop);
+        String referenceGenomeBuild = VCFConverter.getBasesFromPosition("chr1", position, position);
         String newALT = referenceGenomeBuild + ALT;
-        VCFVariant vcfVariant = new VCFVariant(chromosome, start, referenceGenomeBuild, newALT, classification, radboudVariant);
+        VCFVariant vcfVariant = new VCFVariant(chromosome, position, referenceGenomeBuild, newALT, classification, radboudVariant);
         vcfVariant.setValidVariant(validateInsertion());
         return vcfVariant;
     }
 
-    private StartAndStopPosition moveNucleotidesMostLeftPosition(String ALT) {
+    private int moveNucleotidesMostLeftPosition(String ALT) {
         //As long as the nucleotide in the position more to the left is the same, the position should be shuffled to the left
         //e.g. AATTCC, insertion of T at position 5 AATT-T-CC should actually be insertion of T at position 3
         //AA-T-TTCC.
-        int newStart = start;
-        int newStop = stop;
-        while (VCFConverter.getBasesFromPosition("chr1", newStart, newStop).equals(ALT)) {
-            newStart = newStart - 1;
-            newStop = newStop - 1;
+        int position = start;
+        //Only need one base for the anchor, which is the same as the ALT. That's why position is used instead of start/stop.
+        while (VCFConverter.getBasesFromPosition("chr1", position, position).equals(ALT)) {
+            position = position - 1;
         }
-        return new StartAndStopPosition(newStart, newStop);
+        return position;
     }
 
     //TODO: Validate variants with type insertion.
