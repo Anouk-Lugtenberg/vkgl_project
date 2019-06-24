@@ -30,6 +30,14 @@ public class DirectoryHandler {
         return path;
     }
 
+    public File validFile(String directory) {
+        File file = new File(directory);
+        if (!file.exists()) {
+            throw new IllegalArgumentException(file + " is not a valid file.");
+        }
+        return file;
+    }
+
     /**
      * Creates new directory. If the directory already exists, it is not overwritten.
      * @param directory String: the directory to create.
@@ -39,7 +47,7 @@ public class DirectoryHandler {
         try {
             return Files.createDirectory(Paths.get(directory));
         } catch (FileAlreadyExistsException e) {
-            LOGGER.debug("Directory: " + directory + " already exists, not creating it again.");
+            LOGGER.debug("Directory: {} already exists, not creating it again.", directory);
             return Paths.get(directory);
         }
     }
@@ -49,16 +57,16 @@ public class DirectoryHandler {
      * @param directory the directory to clean.
      */
     public void emptyDirectory(Path directory) {
-        LOGGER.debug("Emptying: " + directory);
+        LOGGER.debug("Emptying: {}", directory);
         try {
             FileUtils.cleanDirectory(directory.toFile());
         } catch (IOException e) {
-            LOGGER.warn("Something went wrong while emptying the normalized data directory: " + directory);
+            LOGGER.warn("Something went wrong while emptying the normalized data directory: {}", directory);
             LOGGER.debug(e.getStackTrace());
         }
     }
 
-    public File createFile(String file, Path directory) {
+    File createFile(String file, Path directory) {
         LOGGER.debug("Creating file: " + directory + File.separator + file);
         return new File(directory + File.separator + file);
     }

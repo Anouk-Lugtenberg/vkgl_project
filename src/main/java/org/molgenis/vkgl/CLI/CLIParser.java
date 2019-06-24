@@ -14,6 +14,7 @@ public class CLIParser {
     private Options options = new Options();
     private Path inputDirectory;
     private Path outputDirectory;
+    public static File fastaFileDirectory;
     private boolean writeVariantTypesToFile = false;
     private boolean countVariantTypes = false;
 
@@ -21,6 +22,7 @@ public class CLIParser {
     public CLIParser() {
         options.addOption("h", "help", false, "Show help.");
         options.addOption("i", "inputDirectory", true, "Directory containing variant files.");
+        options.addOption("f", "indexedFastaFile", true, "Directory containing an indexed Fasta file, used as reference.");
         options.addOption("o", "outputDirectory", true, "Directory for storage of the normalized output files. The program will also use these files to check" +
                 "if previous runs has been done and will not execute again for variants already in this directory. If not specified the directory '/normalizedData' will be used.");
         options.addOption(null, "cleanRun", false, "Empties the directory given under option 'outputDirectory' or the standard '/normalizedData'" +
@@ -50,9 +52,13 @@ public class CLIParser {
             if (cmd.hasOption("h")) {
                 help();
             } else if (cmd.hasOption("i")) {
+                if (cmd.hasOption("f")) {
+                    fastaFileDirectory = directoryHandler.validFile(cmd.getOptionValue("f"));
+                } else {
+                    throw new IllegalArgumentException("Missing indexed fasta file.");
+                }
                 setInputDirectory(directoryHandler.validDirectory(cmd.getOptionValue("i")));
                 if (cmd.hasOption("o")) {
-
                     outputDirectory = directoryHandler.validDirectory(cmd.getOptionValue("o"));
                 } else {
                     //Creates new directory for normalized data if directory doesn't already exist.
@@ -114,5 +120,4 @@ public class CLIParser {
 
     public boolean getWriteVariantTypesToFile() { return writeVariantTypesToFile; }
     public boolean getCountVariantTypes() { return countVariantTypes; }
-
 }

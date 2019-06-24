@@ -36,7 +36,7 @@ public class VariantToVCFConverter {
     private void convertRadboudVariants(Map<String, ArrayList<RadboudVariant>> radboudVariantsPerUMC) {
         for (Map.Entry<String, ArrayList<RadboudVariant>> entry : radboudVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
-            LOGGER.info("Converting variants from UMC: " + nameUMC + " to VCFVariants.");
+            LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<RadboudVariant> radboudVariants = entry.getValue();
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (RadboudVariant variant : radboudVariants) {
@@ -58,7 +58,7 @@ public class VariantToVCFConverter {
     private void convertCartageniaVariants(Map<String, ArrayList<CartageniaVariant>> cartageniaVariantsPerUMC) {
         for (Map.Entry<String, ArrayList<CartageniaVariant>> entry : cartageniaVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
-            LOGGER.info("Converting variants from UMC: " + nameUMC + " to VCFVariants.");
+            LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<CartageniaVariant> cartageniaVariants = entry.getValue();
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (CartageniaVariant variant : cartageniaVariants) {
@@ -80,7 +80,7 @@ public class VariantToVCFConverter {
     private void convertHGVSVariants(Map<String, ArrayList<HGVSVariant>> HGVSVariantsPerUMC) {
         for (Map.Entry<String, ArrayList<HGVSVariant>> entry : HGVSVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
-            LOGGER.info("Converting variants from UMC: " + nameUMC + " to VCFVariants.");
+            LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<HGVSVariant> HGVSVariants = entry.getValue();
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (HGVSVariant variant : HGVSVariants) {
@@ -136,7 +136,7 @@ public class VariantToVCFConverter {
             VariantWriter variantWriter = new VariantWriter(outputDirectory);
             variantWriter.writeVCFVariantsToFile(VCFVariantsPerUMC);
         } catch (IOException e) {
-            LOGGER.error("Something went wrong while writing to: " + outputDirectory);
+            LOGGER.error("Something went wrong while writing to: {}", outputDirectory);
             e.printStackTrace();
         }
     }

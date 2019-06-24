@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VariantTest {
-    Variant variant;
+class VariantTest {
+    private Variant variant;
 
     @BeforeEach
     void init() { variant = new Variant(); }
@@ -45,5 +45,11 @@ public class VariantTest {
     void setVariantTypeNotClassified() {
         variant.setVariantType("notClassified");
         assertEquals(variant.getVariantType(), VariantType.NOT_CLASSIFIED);
+    }
+
+    @Test
+    void setChromosomeWithChrRemoved() {
+        variant.setChromosome("chr1");
+        assertEquals(variant.getChromosome(), "1");
     }
 }

@@ -45,8 +45,8 @@ public class VariantWriter {
                 "\t" + variant.getPosition() +
                 "\t" + "." +
                 "\t" + variant.getREF() +
-                "\t" + variant.getALT() +
-                "\t" + variant.getClassification() + "\n";
+                "\t" + variant.getALT() + "\n";
+//                "\t" + variant.getClassification() + "\n";
 //                "\t" + variant.isValidVariant() + "\n";
     }
 

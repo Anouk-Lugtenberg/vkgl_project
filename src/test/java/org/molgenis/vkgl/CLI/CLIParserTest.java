@@ -40,19 +40,23 @@ class CLIParserTest {
     }
 
     @Test
-    void setInputDirectorySunny(@TempDir Path inputDirectory) {
-        String[] args = new String[2];
+    void setInputDirectorySunny(@TempDir Path inputDirectory, @TempDir Path fastaDirectory) {
+        String[] args = new String[4];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
+        args[2] = "-f";
+        args[3] = fastaDirectory.toString();
         CLIParser.parseCLI(args);
         assertEquals(CLIParser.getInputDirectory(), inputDirectory);
     }
 
     @Test
-    void throwsErrorWhenInputDirectoryPathNotValid() {
-        String[] args = new String[2];
+    void throwsErrorWhenInputDirectoryPathNotValid(@TempDir Path fastaDirectory) {
+        String[] args = new String[4];
         args[0] = "-i";
         args[1] = "/this/directory/does/not/exist";
+        args[2] = "-f";
+        args[3] = fastaDirectory.toString();
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> CLIParser.parseCLI(args),
                 "Expected parseCLI() to throw IllegalArgumentException when input directory" +
@@ -61,24 +65,28 @@ class CLIParserTest {
     }
 
     @Test
-    void setOutputDirectoryGivenByUserSunny(@TempDir Path inputDirectory, @TempDir Path outputDirectory) {
-        String[] args = new String[4];
+    void setOutputDirectoryGivenByUserSunny(@TempDir Path inputDirectory, @TempDir Path fastaDirectory, @TempDir Path outputDirectory) {
+        String[] args = new String[6];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         args[2] = "-o";
         args[3] = outputDirectory.toString();
+        args[4]= "-f";
+        args[5] = fastaDirectory.toString();
         CLIParser.parseCLI(args);
         Path actualOutputDirectory = CLIParser.getOutputDirectory();
         assertEquals(actualOutputDirectory, outputDirectory);
     }
 
     @Test
-    void throwsErrorWhenOutputDirectoryGivenByUserPathNotValid(@TempDir Path inputDirectory) {
-        String[] args = new String[4];
+    void throwsErrorWhenOutputDirectoryGivenByUserPathNotValid(@TempDir Path inputDirectory, @TempDir Path fastaDirectory) {
+        String[] args = new String[6];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         args[2] = "-o";
         args[3] = "/not/a/directory";
+        args[4] = "-f";
+        args[5] = fastaDirectory.toString();
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> CLIParser.parseCLI(args),
                 "Expected parseCLI() to throw IllegalArgumentException when input directory" +
@@ -87,10 +95,12 @@ class CLIParserTest {
     }
 
     @Test
-    void setOutputDirectoryIfNotGivenByUser(@TempDir Path inputDirectory) {
-        String[] args = new String[2];
+    void setOutputDirectoryIfNotGivenByUser(@TempDir Path inputDirectory, @TempDir Path fastaDirectory) {
+        String[] args = new String[4];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
+        args[2] = "-f";
+        args[3] = fastaDirectory.toString();
         CLIParser.parseCLI(args);
         Path expectedOutputDirectory = new File(inputDirectory.toString() + File.separator + "normalizedData").toPath();
         Path actualOutputDirectory = CLIParser.getOutputDirectory();
@@ -98,13 +108,16 @@ class CLIParserTest {
     }
 
     @Test
-    void emptyNormalizedDataDirectoryWithCleanRun(@TempDir Path inputDirectory, @TempDir Path outputDirectory) throws IOException {
-        String[] args = new String[5];
+    void emptyNormalizedDataDirectoryWithCleanRun(@TempDir Path inputDirectory, @TempDir Path outputDirectory,
+                                                  @TempDir Path fastaDirectory) throws IOException {
+        String[] args = new String[7];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
         args[2] = "-o";
         args[3] = outputDirectory.toString();
         args[4] = "--cleanRun";
+        args[5] = "-f";
+        args[6] = fastaDirectory.toString();
 
         //Adds file to output directory to be deleted
         Path file = Files.createFile(outputDirectory.resolve("test.txt"));
@@ -118,11 +131,14 @@ class CLIParserTest {
     }
 
     @Test
-    void catchFileAlreadyExistsExceptionIfOutputDirectoryAlreadyExists(@TempDir Path inputDirectory) throws IOException {
+    void catchFileAlreadyExistsExceptionIfOutputDirectoryAlreadyExists(@TempDir Path inputDirectory,
+                                                                       @TempDir Path fastaDirectory) throws IOException {
         Path file = Files.createDirectory(new File(inputDirectory.toString() + File.separator + "normalizedData").toPath());
-        String[] args = new String[2];
+        String[] args = new String[4];
         args[0] = "-i";
         args[1] = inputDirectory.toString();
+        args[2] = "-f";
+        args[3] = fastaDirectory.toString();
         CLIParser.parseCLI(args);
 
         assertThat(appender.getOutput(), containsString("Directory: " + file + " already exists, not creating it again."));

@@ -34,8 +34,8 @@ public class VariantValidator {
                         //and one of them is removed from the VCF variants list.
                         if (variant.getALT().equals(expectedDuplicateVariant.getALT())
                                 && variant.getREF().equals(expectedDuplicateVariant.getREF())) {
-                            LOGGER.info(variant.getRawVariant().getLineNumber() + ": " + variant.getRawVariant().getRawInformation());
                             LOGGER.info(expectedDuplicateVariant.getRawVariant().getLineNumber() + ": " + expectedDuplicateVariant.getRawVariant().getRawInformation());
+                            LOGGER.info(variant.getRawVariant().getLineNumber() + ": " + variant.getRawVariant().getRawInformation());
                             //Variants are only a real duplication of eachother when their classification is the same as well.
                             if (variant.getClassification().equals(expectedDuplicateVariant.getClassification())) {
                                 LOGGER.info("Variants above are duplicates in VCF record (same position, REF, ALT and classification). Removing one of them.\n");

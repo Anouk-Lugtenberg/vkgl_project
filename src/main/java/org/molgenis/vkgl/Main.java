@@ -1,6 +1,6 @@
 package org.molgenis.vkgl;
-import org.apache.logging.log4j.core.lookup.MainMapLookup;
 import org.molgenis.vkgl.IO.RawFileProcessor;
+import org.molgenis.vkgl.service.VCFConverter;
 
 import java.util.Arrays;
 
@@ -33,5 +33,8 @@ public class Main {
 
         RawFileProcessor rawFileProcessor = new RawFileProcessor();
         rawFileProcessor.start(args);
+
+        String bases = VCFConverter.getBasesFromPosition("chr1", 237965130, 237965145);
+        System.out.println("bases = " + bases);
     }
 }

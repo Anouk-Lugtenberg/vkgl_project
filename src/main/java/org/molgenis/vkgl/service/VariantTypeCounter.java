@@ -48,14 +48,15 @@ public class VariantTypeCounter {
                     break;
             }
         }
-        LOGGER.info("\nVariant type occurrences for: " + nameUMC + "\n" +
-                "SNPs:\t\t\t" + SNPCount + "\n" +
-                "Insertions:\t\t" + insertionCount + "\n" +
-                "Deletions:\t\t" + deletionCount + "\n" +
-                "Duplications:\t" + duplicationCount + "\n" +
-                "Del_ins:\t\t" + deletionInsertionCount + "\n" +
-                "Not classified:\t" + notClassifiedCount);
+
+        LOGGER.info("\nVariant type occurrences for: {}\n" +
+                "SNPS:\t\t\t{}\n" +
+                "Insertions:\t\t{}\n" +
+                "Deletions:\t\t{}\n" +
+                "Duplications:\t{}\n" +
+                "Del_ins:\t\t{}\n" +
+                "Not classified:\t{}",
+                nameUMC, SNPCount, insertionCount, deletionCount, duplicationCount, deletionInsertionCount,
+                notClassifiedCount);
     }
-
-
 }

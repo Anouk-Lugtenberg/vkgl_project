@@ -66,17 +66,17 @@ public class VariantParser {
                     }
                 } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
                     if (lineCount != 1) {
-                        LOGGER.error("Line " + lineCount + " of " + file + " could not be processed. Please check the syntax.");
+                        LOGGER.error("Line {} of {} could not be processed. Please check the syntax.", lineCount, file);
                         LOGGER.error(line);
                     } else {
                         //Some of the files contain headers, those should be skipped.
-                        LOGGER.info("Line " + lineCount + " of " + file + " could not be processed. Probably header, skipping line.");
+                        LOGGER.info("Line {} of {} could not be processed. Probably header, skipping line.", lineCount, file);
                         LOGGER.info(line);
                     }
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("Something went wrong while parsing file: " + file);
+            LOGGER.error("Something went wrong while parsing file: {}", file);
             LOGGER.info(e.getMessage());
         }
         switch(variantFormat) {
@@ -120,16 +120,32 @@ public class VariantParser {
         HGVSVariant.setReferenceSequence(columns[0]);
         HGVSVariant.setChromosome(columns[1]);
         HGVSVariant.setGenomicDNA(columns[2]);
-        HGVSVariant.setGenomicDNANormalized(columns[3]);
-        HGVSVariant.setClassification(columns[4]);
-        HGVSVariant.setGeneName(columns[5]);
-        HGVSVariant.setcDNANotation(columns[6]);
-        HGVSVariant.setProteinNotation(columns[7]);
+        HGVSVariant.setClassification(columns[3]);
+        HGVSVariant.setGeneName(columns[4]);
+        HGVSVariant.setcDNANotation(columns[5]);
+        HGVSVariant.setProteinNotation(columns[6]);
         HGVSVariant.setVariantType(HGVSVariant.getGenomicDNA());
         HGVSVariant.setRawInformation(line);
         HGVSVariant.setLineNumber(lineCount);
         return HGVSVariant;
     }
+
+//    private HGVSVariant createHGVSVariant(String line, int lineCount) {
+//        HGVSVariant HGVSVariant = new HGVSVariant();
+//        String[] columns = line.split("\t");
+//        HGVSVariant.setReferenceSequence(columns[0]);
+//        HGVSVariant.setChromosome(columns[1]);
+//        HGVSVariant.setGenomicDNA(columns[2]);
+//        HGVSVariant.setGenomicDNANormalized(columns[3]);
+//        HGVSVariant.setClassification(columns[4]);
+//        HGVSVariant.setGeneName(columns[5]);
+//        HGVSVariant.setcDNANotation(columns[6]);
+//        HGVSVariant.setProteinNotation(columns[7]);
+//        HGVSVariant.setVariantType(HGVSVariant.getGenomicDNA());
+//        HGVSVariant.setRawInformation(line);
+//        HGVSVariant.setLineNumber(lineCount);
+//        return HGVSVariant;
+//    }
 
     private CartageniaVariant createCartageniaVariant(String line, int lineCount) {
         CartageniaVariant cartageniaVariant = new CartageniaVariant();

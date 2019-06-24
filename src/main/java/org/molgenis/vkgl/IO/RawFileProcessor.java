@@ -36,7 +36,7 @@ public class RawFileProcessor {
             startVariantCounter();
         }
 
-//        variantToVCFConverter.convertVariants(variantParser, CLIParser.getStringOutputDirectory());
+        variantToVCFConverter.convertVariants(variantParser, CLIParser.getStringOutputDirectory());
     }
 
     /**
@@ -51,7 +51,7 @@ public class RawFileProcessor {
         Iterator<File> iterator = FileUtils.iterateFiles(new File(filePath.toString()), fileExtensions, false);
         while (iterator.hasNext()) {
             File file = iterator.next();
-            LOGGER.info("Processing file: " + file);
+            LOGGER.info("Processing file: {}", file);
             variantParser.parseFile(file);
         }
     }
