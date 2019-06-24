@@ -1,6 +1,5 @@
 package org.molgenis.vkgl;
 import org.molgenis.vkgl.IO.RawFileProcessor;
-import org.molgenis.vkgl.service.VCFConverter;
 
 import java.util.Arrays;
 

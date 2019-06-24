@@ -12,7 +12,7 @@ import java.io.File;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 
-public class HGVSToVCFConverterTest {
+class HGVSToVCFConverterTest {
 
     @BeforeEach
     void setUpFasta() {
