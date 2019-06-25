@@ -13,13 +13,11 @@ public class HGVSToVCFConverter implements VCFConverter {
     private VCFVariant VCFVariant;
     private String chromosome;
     private String genomicDNA;
-    private String genomicDNANormalized;
 
     public HGVSToVCFConverter(HGVSVariant HGVSVariant) {
         this.HGVSVariant = HGVSVariant;
         this.chromosome = HGVSVariant.getChromosome();
         this.genomicDNA = HGVSVariant.getGenomicDNA();
-        this.genomicDNANormalized = HGVSVariant.getGenomicDNANormalized();
     }
 
     @Override

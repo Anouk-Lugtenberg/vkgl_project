@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 public class HGVSVariant extends Variant implements Comparable<HGVSVariant> {
     private String referenceSequence;
     private String genomicDNA;
-    private String genomicDNANormalized;
 
     public String getReferenceSequence() {
         return referenceSequence;
@@ -23,14 +22,6 @@ public class HGVSVariant extends Variant implements Comparable<HGVSVariant> {
 
     public void setGenomicDNA(String genomicDNA) {
         this.genomicDNA = genomicDNA;
-    }
-
-    public String getGenomicDNANormalized() {
-        return genomicDNANormalized;
-    }
-
-    public void setGenomicDNANormalized(String genomicDNANormalized) {
-        this.genomicDNANormalized = genomicDNANormalized;
     }
 
     @Override
