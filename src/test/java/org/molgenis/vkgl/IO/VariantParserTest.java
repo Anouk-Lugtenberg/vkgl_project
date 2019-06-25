@@ -67,7 +67,6 @@ class VariantParserTest {
         expectedHGVSVariant.setReferenceSequence("hg19");
         expectedHGVSVariant.setChromosome("1");
         expectedHGVSVariant.setGenomicDNA("NC_000001.10:g.874714C>T");
-        expectedHGVSVariant.setGenomicDNANormalized("NC_000001.10:g.874714C>T");
         expectedHGVSVariant.setClassification("-?");
         expectedHGVSVariant.setGeneName("NOC2L");
         expectedHGVSVariant.setcDNANotation("NM_015658.3:c.*5360G>A");

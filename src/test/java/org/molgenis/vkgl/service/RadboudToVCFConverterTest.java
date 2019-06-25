@@ -198,4 +198,24 @@ public class RadboudToVCFConverterTest {
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
     }
+
+    @Test
+    void convertInsertionDifferentNucleotidesTwo() {
+        RadboudVariant radboudVariantDifferentNucleotides = new RadboudVariant();
+        radboudVariantDifferentNucleotides.setChromosome("chr3");
+        radboudVariantDifferentNucleotides.setStart(6);
+        radboudVariantDifferentNucleotides.setStop(6);
+        radboudVariantDifferentNucleotides.setREF("");
+        radboudVariantDifferentNucleotides.setALT("AAGAA");
+        radboudVariantDifferentNucleotides.setClassification("class 1");
+        radboudVariantDifferentNucleotides.setVariantType("ins");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariantDifferentNucleotides);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("3", 2, "T", "TAGAAA", ClassificationType.BENIGN, radboudVariantDifferentNucleotides);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
 }
