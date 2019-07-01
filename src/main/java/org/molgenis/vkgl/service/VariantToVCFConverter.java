@@ -4,10 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.IO.VariantParser;
 import org.molgenis.vkgl.IO.VariantWriter;
-import org.molgenis.vkgl.model.CartageniaVariant;
-import org.molgenis.vkgl.model.HGVSVariant;
-import org.molgenis.vkgl.model.RadboudVariant;
-import org.molgenis.vkgl.model.VCFVariant;
+import org.molgenis.vkgl.biocommons.BioCommonsHelper;
+import org.molgenis.vkgl.biocommons.BioCommonsVCFVariant;
+import org.molgenis.vkgl.model.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,8 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VariantToVCFConverter {
+    private int notSameAsBioCommons;
     private static Logger LOGGER = LogManager.getLogger(VariantToVCFConverter.class.getName());
     private Map<String, ArrayList<VCFVariant>> VCFVariantsPerUMC = new HashMap<>();
+    private BioCommonsHelper bioCommonsHelper = new BioCommonsHelper();
 
     public void convertVariants(VariantParser variants, String outputDirectory) {
         convertRadboudVariants(variants.getRadboudVariants());
@@ -40,13 +41,31 @@ public class VariantToVCFConverter {
             ArrayList<RadboudVariant> radboudVariants = entry.getValue();
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (RadboudVariant variant : radboudVariants) {
-                //TODO for now only the variants which have chromosome 1 are processed.
-                if (variant.getChromosome().equals("1")) {
-                    RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
-                    vcfVariants.add(radboudToVCFConverter.convertToVCF());
-                }
+                RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
+                VCFVariant vcfVariant = radboudToVCFConverter.convertToVCF();
+                checkRadboudVariantWithBioCommons(variant, vcfVariant);
+                vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
+        }
+    }
+
+    private void checkRadboudVariantWithBioCommons(RadboudVariant radboudVariant, VCFVariant vcfVariant) {
+        BioCommonsVCFVariant bioCommonsVCFVariant;
+        if (radboudVariant.getVariantType() == VariantType.SNP) {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(radboudVariant.getcDNANotation(), true);
+        } else {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(radboudVariant.getcDNANotation(), false);
+        }
+        if (bioCommonsVCFVariant.getError() == null) {
+            if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
+                System.out.println("\nVARIANT NOT THE SAME AS BIO COMMONS");
+                System.out.println("radboudVariant = " + radboudVariant.getRawInformation());
+                notSameAsBioCommons++;
+            }
+        } else {
+            System.out.println("\nradboudVariant.getRawInformation() = " + radboudVariant.getRawInformation());
+            System.out.println("bioCommonsVCFVariant = " + bioCommonsVCFVariant.getError());
         }
     }
 
@@ -56,20 +75,41 @@ public class VariantToVCFConverter {
      *                                 as Cartagenia variants.
      */
     private void convertCartageniaVariants(Map<String, ArrayList<CartageniaVariant>> cartageniaVariantsPerUMC) {
+        String bases = VCFConverter.getBasesFromPosition("1", 247587531, 247587531);
         for (Map.Entry<String, ArrayList<CartageniaVariant>> entry : cartageniaVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<CartageniaVariant> cartageniaVariants = entry.getValue();
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (CartageniaVariant variant : cartageniaVariants) {
-                //TODO for now only the variants which have chromosome 1 are processed.
-                if (variant.getChromosome().equals("1")) {
-                    RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
-                    vcfVariants.add(radboudToVCFConverter.convertToVCF());
-                }
+                RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
+                VCFVariant vcfVariant = radboudToVCFConverter.convertToVCF();
+                checkCartageniaVariantsWithBioCommons(variant, vcfVariant);
+                vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
         }
+    }
+
+    private void checkCartageniaVariantsWithBioCommons(CartageniaVariant cartageniaVariant, VCFVariant vcfVariant) {
+        BioCommonsVCFVariant bioCommonsVCFVariant;
+        String cDNANotation = cartageniaVariant.getTranscript() + ":" + cartageniaVariant.getcDNANotation();
+        if (cartageniaVariant.getVariantType() == VariantType.SNP) {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(cDNANotation, true);
+        } else {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(cDNANotation, false);
+        }
+        //todo what to do when bio commons gives an error?
+        if (bioCommonsVCFVariant.getError() == null) {
+            if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
+                System.out.println("VARIANT NOT THE SAME AS BIO COMMONS");
+                System.out.println("cartageniaVariant.getRawInformation() = " + cartageniaVariant.getRawInformation());
+                notSameAsBioCommons++;
+            }
+        } else {
+            System.out.println("bioCommonsVCFVariant = " + bioCommonsVCFVariant.getError());
+        }
+
     }
 
     /**
@@ -84,14 +124,33 @@ public class VariantToVCFConverter {
             ArrayList<HGVSVariant> HGVSVariants = entry.getValue();
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (HGVSVariant variant : HGVSVariants) {
-                //TODO for now only the variants which have chromosome 1 are processed.
-                if (variant.getChromosome().equals("1")) {
-                    HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(variant);
-                    vcfVariants.add(hgvsToVCFConverter.convertToVCF());
-                }
+                HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(variant);
+                VCFVariant vcfVariant = hgvsToVCFConverter.convertToVCF();
+                checkHGVSVariantWithBioCommons(variant, vcfVariant);
+                vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
         }
+        System.out.println("notSameAsBioCommons = " + notSameAsBioCommons);
+    }
+
+    private void checkHGVSVariantWithBioCommons(HGVSVariant HGVSVariant, VCFVariant vcfVariant) {
+        BioCommonsVCFVariant bioCommonsVCFVariant;
+        if (HGVSVariant.getVariantType() == VariantType.SNP) {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(HGVSVariant.getGenomicDNA(), true);
+        } else {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(HGVSVariant.getGenomicDNA(), false);
+        }
+        if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
+            notSameAsBioCommons++;
+        }
+    }
+
+    boolean sameVariant(BioCommonsVCFVariant bioCommonsVCFVariant, VCFVariant vcfVariant) {
+        return bioCommonsVCFVariant.getAlt().equals(vcfVariant.getALT()) &&
+                bioCommonsVCFVariant.getRef().equals(vcfVariant.getREF()) &&
+                bioCommonsVCFVariant.getChrom().equals(vcfVariant.getChromosome()) &&
+                bioCommonsVCFVariant.getPos() == vcfVariant.getPosition();
     }
 
     /**

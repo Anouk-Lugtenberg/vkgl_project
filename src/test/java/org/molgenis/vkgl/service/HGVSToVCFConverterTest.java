@@ -9,6 +9,7 @@ import org.molgenis.vkgl.model.HGVSVariant;
 import org.molgenis.vkgl.model.VCFVariant;
 
 import java.io.File;
+import java.util.regex.Matcher;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 
@@ -134,6 +135,108 @@ class HGVSToVCFConverterTest {
         VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
 
         VCFVariant expectedVCFVariant = new VCFVariant("1", 7, "C", "CGGGGGGGGGGG", ClassificationType.VOUS, hgvsVariantLotOfSameNucleotides);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertInsertionTwoDifferentNucleotides() {
+        HGVSVariant hgvsVariantTwoDifferentNucleotides = new HGVSVariant();
+        hgvsVariantTwoDifferentNucleotides.setChromosome("1");
+        hgvsVariantTwoDifferentNucleotides.setGenomicDNA("NC_000001.10:g.3_4insTACGTG");
+        hgvsVariantTwoDifferentNucleotides.setClassification("?");
+        hgvsVariantTwoDifferentNucleotides.setVariantType(hgvsVariantTwoDifferentNucleotides.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantTwoDifferentNucleotides);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("1", 2, "G", "GGTACGT", ClassificationType.VOUS, hgvsVariantTwoDifferentNucleotides);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertInsertionDifferentNucleotides() {
+        HGVSVariant hgvsVariantDifferentNucleotides = new HGVSVariant();
+        hgvsVariantDifferentNucleotides.setChromosome("2");
+        hgvsVariantDifferentNucleotides.setGenomicDNA("NC_000001.10:g.8_9insCAAA");
+        hgvsVariantDifferentNucleotides.setClassification("?");
+        hgvsVariantDifferentNucleotides.setVariantType(hgvsVariantDifferentNucleotides.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantDifferentNucleotides);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("2", 5, "A", "AAAAC", ClassificationType.VOUS, hgvsVariantDifferentNucleotides);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertInsertionDifferentNucleotidesTwo() {
+        HGVSVariant hgvsVariantDifferentNucleotides = new HGVSVariant();
+        hgvsVariantDifferentNucleotides.setChromosome("3");
+        hgvsVariantDifferentNucleotides.setGenomicDNA("NC_00001.10:g.7_8insAAGAA");
+        hgvsVariantDifferentNucleotides.setClassification("?");
+        hgvsVariantDifferentNucleotides.setVariantType(hgvsVariantDifferentNucleotides.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantDifferentNucleotides);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("3", 3, "T", "TAGAAA", ClassificationType.VOUS, hgvsVariantDifferentNucleotides);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertOneNucleotideDeletion() {
+        HGVSVariant hgvsVariantOneNucleotideDeletion = new HGVSVariant();
+        hgvsVariantOneNucleotideDeletion.setChromosome("6");
+        hgvsVariantOneNucleotideDeletion.setGenomicDNA("NC_000001.10:g.5del");
+        hgvsVariantOneNucleotideDeletion.setClassification("?");
+        hgvsVariantOneNucleotideDeletion.setVariantType(hgvsVariantOneNucleotideDeletion.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantOneNucleotideDeletion);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("6", 2, "GC", "G", ClassificationType.VOUS, hgvsVariantOneNucleotideDeletion);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertTwoSameNucleotidesDeletion() {
+        HGVSVariant hgvsVariantTwoSameNucleotidesDeletion = new HGVSVariant();
+        hgvsVariantTwoSameNucleotidesDeletion.setChromosome("6");
+        hgvsVariantTwoSameNucleotidesDeletion.setGenomicDNA("NC_000001.10:g.4_5del");
+        hgvsVariantTwoSameNucleotidesDeletion.setClassification("?");
+        hgvsVariantTwoSameNucleotidesDeletion.setVariantType(hgvsVariantTwoSameNucleotidesDeletion.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantTwoSameNucleotidesDeletion);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("6", 2, "GCC", "G", ClassificationType.VOUS, hgvsVariantTwoSameNucleotidesDeletion);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDifferentNucleotidesDeletion() {
+        HGVSVariant hgvsVariantDifferentNucleotidesDeletion = new HGVSVariant();
+        hgvsVariantDifferentNucleotidesDeletion.setChromosome("7");
+        hgvsVariantDifferentNucleotidesDeletion.setGenomicDNA("NC_000001.10:g.6_8del");
+        hgvsVariantDifferentNucleotidesDeletion.setClassification("?");
+        hgvsVariantDifferentNucleotidesDeletion.setVariantType(hgvsVariantDifferentNucleotidesDeletion.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantDifferentNucleotidesDeletion);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("7", 3, "CAGA", "C", ClassificationType.VOUS, hgvsVariantDifferentNucleotidesDeletion);
         expectedVCFVariant.setValidVariant(true);
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));

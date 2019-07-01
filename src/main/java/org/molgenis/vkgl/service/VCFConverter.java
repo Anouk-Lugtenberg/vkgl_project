@@ -5,14 +5,11 @@ import htsjdk.samtools.reference.ReferenceSequenceFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.CLI.CLIParser;
+import org.molgenis.vkgl.model.PositionAndNucleotides;
 import org.molgenis.vkgl.model.VCFVariant;
 import org.molgenis.vkgl.model.Variant;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 
 public interface VCFConverter {
     Logger LOGGER = LogManager.getLogger(VCFConverter.class.getName());
@@ -26,11 +23,14 @@ public interface VCFConverter {
     File fastaFile = CLIParser.fastaFileDirectory;
 
     /**
+     * Retrieves the bases from a position given chromosome, start and stop with the use of samtools.
+     * https://github.com/samtools/htsjdk
      *
-     * @param chromosome
-     * @param start
-     * @param stop
-     * @return
+     * Uses the fasta file given by the user via command line.
+     * @param chromosome a String representation of the chromosome
+     * @param start start position
+     * @param stop stop position
+     * @return String containing the found bases in the sequence
      */
     static String getBasesFromPosition(String chromosome, int start, int stop) {
         String subsequence = null;
@@ -62,47 +62,84 @@ public interface VCFConverter {
         return referenceGenomeBuild.equals(REF) && !REF.equals(ALT);
     }
 
-//    static void getMinorAlleleFrequency(Variant variant) {
-//        String server = "https://rest.ensemble.org";
-//        String ext = "/vep/human/hgvs/" + variant.getGeneName() + variant.getcDNANotation() + "?";
-//        try {
-//            URL url = new URL(server + ext);
-//            URLConnection connection = url.openConnection();
-//            HttpURLConnection httpConnection = (HttpURLConnection)connection;
-//            httpConnection.setRequestProperty("Content-Type", "application/json");
-//
-//            InputStream response = connection.getInputStream();
-//            int responseCode = httpConnection.getResponseCode();
-//
-//            if (responseCode != 200) {
-//                throw new RuntimeException("Response code was not 200. Detected response was " + responseCode);
-//            }
-//
-//            String output;
-//            Reader reader = null;
-//            try {
-//                reader = new BufferedReader(new InputStreamReader(response, "UTF-8"));
-//                StringBuilder builder = new StringBuilder();
-//                char[] buffer = new char[8192];
-//                int read;
-//                while ((read = reader.read(buffer, 0, buffer.length)) > 0) {
-//                    builder.append(buffer, 0, read);
-//                }
-//                output = builder.toString();
-//            } finally {
-//                if (reader != null) try {
-//                    reader.close();
-//                } catch (IOException logOrIgnore) {
-//                    logOrIgnore.printStackTrace();
-//                }
-//            }
-//
-//            System.out.println(output);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//    }
+    /**
+     * Moves the position of a deletion to the most left (5') position of the genome.
+     * @param chromosome the chromosome the deletion lies on
+     * @param start start position of the chromosome
+     * @param stop stop position of the chromosome
+     * @return PositionAndNucleotides: the position of the deletion and the nucleotides which are removed
+     */
+    static PositionAndNucleotides moveDeletionMostLeftPosition(String chromosome, int start, int stop) {
+        PositionAndNucleotides positionAndNucleotides;
+        String removedNucleotides = VCFConverter.getBasesFromPosition(chromosome, start, stop);
+        //if start is same as stop, only one nucleotide is removed
+        if (start == stop) {
+            int position = VCFConverter.moveNucleotidesMostLeftPosition(removedNucleotides, start, chromosome);
+            positionAndNucleotides = new PositionAndNucleotides(position, removedNucleotides);
+        } else {
+            //New variable is made, so this variable can be used in the lambda.
+            String nucleotidesRemoved = VCFConverter.getBasesFromPosition(chromosome, start, stop);
+
+            //if all nucleotides are the same, it's only needed to check if the nucleotide on the left is the same
+            //as one of the nucleotides
+            if (nucleotidesRemoved.chars().allMatch(c -> c == nucleotidesRemoved.charAt(0))) {
+                int position = VCFConverter.moveNucleotidesMostLeftPosition(nucleotidesRemoved.substring(0,1), start, chromosome);
+                positionAndNucleotides = new PositionAndNucleotides(position, removedNucleotides);
+            } else {
+                //Start - 1, nucleotide from 3' side is one place left to the deleted sequence
+                positionAndNucleotides = VCFConverter.moveDifferentNucleotidesMostLeftPosition(start - 1, removedNucleotides, chromosome);
+            }
+        }
+        return positionAndNucleotides;
+    }
+
+    /**
+     * Checks if nucleotides more to the left position are the same as the given nucleotide. If they are
+     * moves the position to the left.
+     * @param nucleotide the nucleotide to be checked
+     * @param position the original position of the nucleotide
+     * @param chromosome the chromosome from the nucleotide
+     * @return the new position
+     */
+    static int moveNucleotidesMostLeftPosition(String nucleotide, int position, String chromosome) {
+        //As long as the nucleotide in the position more to the left is the same, the position should be shuffled to the left
+        //e.g. AATTCC, insertion of T at position 5 AATT-T-CC should actually be insertion of T at position 3
+        //AA-T-TTCC.
+        //Only need one base for the anchor, which is the same as the ALT. That's why position is used instead of start/stop.
+        while (VCFConverter.getBasesFromPosition(chromosome, position, position).equals(nucleotide)) {
+            position = position - 1;
+        }
+        return position;
+    }
+
+    /**
+     * Checks if different nucleotides can be moved more to the left. If that's the case, the position is moved
+     * to the left.
+     * @param position the original start position of the nucleotides
+     * @param nucleotides the nucleotides to be checked
+     * @param chromosome the chromosome from the nucleotides
+     * @return PositionAndNucleotides an object containing both the new position and nucleotides
+     */
+    static PositionAndNucleotides moveDifferentNucleotidesMostLeftPosition(int position, String nucleotides, String chromosome) {
+        StringBuilder newNucleotides = new StringBuilder(nucleotides);
+
+        //Get last nucleotide from ALT
+        String lastNucleotide = nucleotides.substring(nucleotides.length() - 1);
+
+        //Get nucleotide which is on the 3' side of the sequence.
+        String nucleotideThreeSideALT = VCFConverter.getBasesFromPosition(chromosome, position, position);
+
+        while (nucleotideThreeSideALT.equals(lastNucleotide)) {
+            //If nucleotides are equal: insert nucleotide to the front of the ALT and remove from the end of the ALT.
+            newNucleotides.insert(0, lastNucleotide).setLength(newNucleotides.length() - 1);
+
+            //Re-do while loop for position one step more to the 3' side of the sequence.
+            //Last nucleotide is now the last character from the new ALT.
+            lastNucleotide = newNucleotides.substring(newNucleotides.length() - 1);
+            position = position - 1;
+            nucleotideThreeSideALT = VCFConverter.getBasesFromPosition(chromosome, position, position);
+        }
+        nucleotides = newNucleotides.toString();
+        return new PositionAndNucleotides(position, nucleotides);
+    }
 }

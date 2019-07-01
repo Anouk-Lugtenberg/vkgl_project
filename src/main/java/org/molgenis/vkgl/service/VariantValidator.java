@@ -58,21 +58,4 @@ public class VariantValidator {
             }
         }
     }
-
-    private void startVariantValidator(String chromosome, int position, String REF, String ALT) {
-        String variantDescription = chromosome + ":" + position + ":" + REF + ":" + ALT;
-        String URL = "https://rest.variantvalidator.org:443/variantvalidator/GRCh37/" + variantDescription + "/all";
-//        try {
-//            java.net.URL urlObject = new URL(URL);
-//            URLConnection urlConnection = urlObject.openConnection();
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                JSONObject json = new JSONObject(line);
-//                System.out.println("json = " + json);
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    }
 }

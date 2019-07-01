@@ -34,6 +34,9 @@ dependencies {
     extraLibs group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.7.4'
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
     extraLibs group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    // https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient
+    extraLibs group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.9'
+
 
     // https://mvnrepository.com/artifact/com.github.samtools/htsjdk
     extraLibs group: 'com.github.samtools', name: 'htsjdk', version: '2.19.0'
