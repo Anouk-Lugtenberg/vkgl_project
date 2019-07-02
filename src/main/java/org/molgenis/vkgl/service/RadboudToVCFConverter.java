@@ -78,10 +78,11 @@ public class RadboudToVCFConverter implements VCFConverter {
             ALT = positionAndAlternative.getNucleotides();
         }
 
-        if (position != start) {
-            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}", start, position);
-        }
+//        if (position != start) {
+//            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+//            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}", start, position);
+//        }
+
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
         String newALT = referenceGenomeBuild + ALT;
         VCFVariant vcfVariant = new VCFVariant(chromosome, position, referenceGenomeBuild, newALT, classification, radboudVariant);
@@ -99,10 +100,10 @@ public class RadboudToVCFConverter implements VCFConverter {
         PositionAndNucleotides positionAndNucleotides = VCFConverter.moveDeletionMostLeftPosition(chromosome, start, stop);
         int position = positionAndNucleotides.getPosition();
 
-        if (position != start) {
-            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}\n", start, position);
-        }
+//        if (position != start) {
+//            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+//            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}\n", start, position);
+//        }
 
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
         String newREF = referenceGenomeBuild + positionAndNucleotides.getNucleotides();

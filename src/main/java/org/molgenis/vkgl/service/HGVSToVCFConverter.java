@@ -94,10 +94,10 @@ public class HGVSToVCFConverter implements VCFConverter {
             position = positionAndAlternative.getPosition();
             ALT = positionAndAlternative.getNucleotides();
         }
-        if (position != startAndStop.getStart()) {
-            LOGGER.info("{}: {}", HGVSVariant.getLineNumber(), HGVSVariant.getRawInformation());
-            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}\n", start, position);
-        }
+//        if (position != startAndStop.getStart()) {
+//            LOGGER.info("{}: {}", HGVSVariant.getLineNumber(), HGVSVariant.getRawInformation());
+//            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}\n", start, position);
+//        }
 
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
         String newALT = referenceGenomeBuild + ALT;

@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VariantToVCFConverter {
-    private int notSameAsBioCommons;
     private static Logger LOGGER = LogManager.getLogger(VariantToVCFConverter.class.getName());
     private Map<String, ArrayList<VCFVariant>> VCFVariantsPerUMC = new HashMap<>();
     private BioCommonsHelper bioCommonsHelper = new BioCommonsHelper();
@@ -43,29 +42,10 @@ public class VariantToVCFConverter {
             for (RadboudVariant variant : radboudVariants) {
                 RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
                 VCFVariant vcfVariant = radboudToVCFConverter.convertToVCF();
-                checkRadboudVariantWithBioCommons(variant, vcfVariant);
+                checkVariantWithBioCommons(variant.getcDNANotation(), variant, vcfVariant);
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
-        }
-    }
-
-    private void checkRadboudVariantWithBioCommons(RadboudVariant radboudVariant, VCFVariant vcfVariant) {
-        BioCommonsVCFVariant bioCommonsVCFVariant;
-        if (radboudVariant.getVariantType() == VariantType.SNP) {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(radboudVariant.getcDNANotation(), true);
-        } else {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(radboudVariant.getcDNANotation(), false);
-        }
-        if (bioCommonsVCFVariant.getError() == null) {
-            if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
-                System.out.println("\nVARIANT NOT THE SAME AS BIO COMMONS");
-                System.out.println("radboudVariant = " + radboudVariant.getRawInformation());
-                notSameAsBioCommons++;
-            }
-        } else {
-            System.out.println("\nradboudVariant.getRawInformation() = " + radboudVariant.getRawInformation());
-            System.out.println("bioCommonsVCFVariant = " + bioCommonsVCFVariant.getError());
         }
     }
 
@@ -75,7 +55,6 @@ public class VariantToVCFConverter {
      *                                 as Cartagenia variants.
      */
     private void convertCartageniaVariants(Map<String, ArrayList<CartageniaVariant>> cartageniaVariantsPerUMC) {
-        String bases = VCFConverter.getBasesFromPosition("1", 247587531, 247587531);
         for (Map.Entry<String, ArrayList<CartageniaVariant>> entry : cartageniaVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
@@ -84,32 +63,12 @@ public class VariantToVCFConverter {
             for (CartageniaVariant variant : cartageniaVariants) {
                 RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
                 VCFVariant vcfVariant = radboudToVCFConverter.convertToVCF();
-                checkCartageniaVariantsWithBioCommons(variant, vcfVariant);
+                String cDNANotation = variant.getTranscript() + ":" + variant.getcDNANotation();
+                checkVariantWithBioCommons(cDNANotation, variant, vcfVariant);
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
         }
-    }
-
-    private void checkCartageniaVariantsWithBioCommons(CartageniaVariant cartageniaVariant, VCFVariant vcfVariant) {
-        BioCommonsVCFVariant bioCommonsVCFVariant;
-        String cDNANotation = cartageniaVariant.getTranscript() + ":" + cartageniaVariant.getcDNANotation();
-        if (cartageniaVariant.getVariantType() == VariantType.SNP) {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(cDNANotation, true);
-        } else {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(cDNANotation, false);
-        }
-        //todo what to do when bio commons gives an error?
-        if (bioCommonsVCFVariant.getError() == null) {
-            if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
-                System.out.println("VARIANT NOT THE SAME AS BIO COMMONS");
-                System.out.println("cartageniaVariant.getRawInformation() = " + cartageniaVariant.getRawInformation());
-                notSameAsBioCommons++;
-            }
-        } else {
-            System.out.println("bioCommonsVCFVariant = " + bioCommonsVCFVariant.getError());
-        }
-
     }
 
     /**
@@ -126,23 +85,32 @@ public class VariantToVCFConverter {
             for (HGVSVariant variant : HGVSVariants) {
                 HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(variant);
                 VCFVariant vcfVariant = hgvsToVCFConverter.convertToVCF();
-                checkHGVSVariantWithBioCommons(variant, vcfVariant);
+                checkVariantWithBioCommons(variant.getGenomicDNA(), variant, vcfVariant);
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
         }
-        System.out.println("notSameAsBioCommons = " + notSameAsBioCommons);
     }
 
-    private void checkHGVSVariantWithBioCommons(HGVSVariant HGVSVariant, VCFVariant vcfVariant) {
+    private void checkVariantWithBioCommons(String dnaNotation, Variant variant, VCFVariant vcfVariant) {
         BioCommonsVCFVariant bioCommonsVCFVariant;
-        if (HGVSVariant.getVariantType() == VariantType.SNP) {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(HGVSVariant.getGenomicDNA(), true);
+        if (variant.getVariantType() == VariantType.SNP) {
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(dnaNotation, true);
         } else {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(HGVSVariant.getGenomicDNA(), false);
+            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(dnaNotation, false);
         }
-        if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
-            notSameAsBioCommons++;
+
+        if (bioCommonsVCFVariant.getError() == null) {
+            if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
+                LOGGER.info("{}: {}", variant.getLineNumber(), variant.getRawInformation());
+                LOGGER.info("VCF variant created is not the same as the one created with bio commons");
+                LOGGER.info("VCF variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}", vcfVariant.getChromosome(), vcfVariant.getPosition(), vcfVariant.getREF(), vcfVariant.getALT() );
+                LOGGER.info("BioCommons variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}\n", bioCommonsVCFVariant.getChrom(), bioCommonsVCFVariant.getPos(), bioCommonsVCFVariant.getRef(), bioCommonsVCFVariant.getAlt());
+            }
+        } else {
+            LOGGER.info("{}: {}", variant.getLineNumber(), variant.getRawInformation());
+            LOGGER.info("BioCommons raised an error while creating a variant");
+            LOGGER.info("Error: {}\n", bioCommonsVCFVariant.getError());
         }
     }
 
