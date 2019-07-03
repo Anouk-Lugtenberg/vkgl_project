@@ -98,10 +98,18 @@ public class VariantToVCFConverter {
         }
     }
 
+    /**
+     * Replaces ',' with '.' and '::' with ':' (errors mostly found in Radboud data).
+     * @param dnaNotation the dnaNotation to be checked
+     * @return a String containg the dna notation with the replacements
+     */
     private String checkDNANotation(String dnaNotation) {
             return dnaNotation.replace(",", ".").replace("::", ":");
     }
 
+    /**
+     * Checks the variants with the variants created by BioCommons
+     */
     private void checkVariantsWithBioCommons() {
         for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
@@ -130,6 +138,11 @@ public class VariantToVCFConverter {
         }
     }
 
+    /**
+     * Compares the two variants. If they differ or an error is found, variant is flagged as invalid.
+     * @param bioCommonsVCFVariant the created bio commons variant
+     * @param vcfVariant the created vcf variant
+     */
     private void compareVariants(BioCommonsVCFVariant bioCommonsVCFVariant, VCFVariant vcfVariant) {
         if (bioCommonsVCFVariant.getError() == null) {
             if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
@@ -148,6 +161,12 @@ public class VariantToVCFConverter {
         }
     }
 
+    /**
+     * Checks if four fields are the same (alt, ref, chrom and pos)
+     * @param bioCommonsVCFVariant a bio commons variant
+     * @param vcfVariant a vcf variant
+     * @return true if the four fields are the same, false if one or more differ
+     */
     boolean sameVariant(BioCommonsVCFVariant bioCommonsVCFVariant, VCFVariant vcfVariant) {
         return bioCommonsVCFVariant.getAlt().equals(vcfVariant.getALT()) &&
                 bioCommonsVCFVariant.getRef().equals(vcfVariant.getREF()) &&

@@ -29,14 +29,26 @@ public class BioCommonsHelper {
         this.httpPostLeftAnchorFalse = new HttpPost("http://localhost:1234/h2v?keep_left_anchor=False");
     }
 
+    /**
+     * Retrieves a list of bio commons variants based on a list of VCF variants.
+     * @param vcfVariants the list with VCF variants
+     * @param isSNP true if it's a list of snps, false if contains other variants
+     * @return a list containing BioCommonsVCFVariants
+     */
     public List<BioCommonsVCFVariant> getBioCommonsVariants(ArrayList<VCFVariant> vcfVariants, boolean isSNP) {
         ArrayList<String> dnaNotations = new ArrayList<>();
         List<BioCommonsVCFVariant> bioCommonsVCFVariants;
+
+        //Create a list with only the dna notations
         for (VCFVariant vcfVariant : vcfVariants) {
             dnaNotations.add(vcfVariant.getDnaNotation());
         }
+
+        //Create a JSON string
         String json = createJSONArray(dnaNotations);
         StringEntity requestEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
+
+        //If variants are SNPS, no anchor should be retrieved
         if (isSNP) {
             httpPostLeftAnchorFalse.setEntity(requestEntity);
         } else {
@@ -59,6 +71,11 @@ public class BioCommonsHelper {
         return bioCommonsVCFVariants;
     }
 
+    /**
+     * Creates a JSON array based on a list of dna notation
+     * @param dnaNotations the list containg the dna notations
+     * @return json string
+     */
     private String createJSONArray(ArrayList<String> dnaNotations) {
         String json = "";
         ObjectMapper objectMapper = new ObjectMapper();
@@ -70,6 +87,11 @@ public class BioCommonsHelper {
         return json;
     }
 
+    /**
+     * Converts an input stream to a string
+     * @param inputStream the input stream
+     * @return a string containing the information from the input string
+     */
     private String convertInputStreamToString(InputStream inputStream) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder stringBuilder = new StringBuilder();
@@ -85,6 +107,12 @@ public class BioCommonsHelper {
         return stringBuilder.toString();
     }
 
+    /**
+     * Converts a json array to a list containing BioCommonsVCFVariants
+     * @param jsonArray the json array
+     * @return a List containing BioCommonsVCFVariants
+     * @throws IOException if object mapper can't read the array
+     */
     private List<BioCommonsVCFVariant> convertToBioCommonsVariants(String jsonArray) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         return Arrays.asList(objectMapper.readValue(jsonArray, BioCommonsVCFVariant[].class));
