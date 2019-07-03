@@ -2,26 +2,26 @@ package org.molgenis.vkgl.biocommons;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.molgenis.vkgl.service.VariantToVCFConverter;
+import org.molgenis.vkgl.model.VCFVariant;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class BioCommonsHelper {
     private HttpClient httpClient;
     private HttpPost httpPostLeftAnchorTrue;
     private HttpPost httpPostLeftAnchorFalse;
-    private static Logger LOGGER = LogManager.getLogger(BioCommonsHelper.class.getName());
 
     public BioCommonsHelper() {
         this.httpClient = HttpClients.createDefault();
@@ -29,16 +29,20 @@ public class BioCommonsHelper {
         this.httpPostLeftAnchorFalse = new HttpPost("http://localhost:1234/h2v?keep_left_anchor=False");
     }
 
-    public BioCommonsVCFVariant postDNANotation(String DNANotation, boolean isSNP) {
-        String jsonString = createJSON(DNANotation);
-        StringEntity requestEntity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
+    public List<BioCommonsVCFVariant> getBioCommonsVariants(ArrayList<VCFVariant> vcfVariants, boolean isSNP) {
+        ArrayList<String> dnaNotations = new ArrayList<>();
+        List<BioCommonsVCFVariant> bioCommonsVCFVariants;
+        for (VCFVariant vcfVariant : vcfVariants) {
+            dnaNotations.add(vcfVariant.getDnaNotation());
+        }
+        String json = createJSONArray(dnaNotations);
+        StringEntity requestEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
         if (isSNP) {
             httpPostLeftAnchorFalse.setEntity(requestEntity);
         } else {
             httpPostLeftAnchorTrue.setEntity(requestEntity);
         }
 
-        BioCommonsVCFVariant bioCommonsVCFVariant = new BioCommonsVCFVariant();
         try {
             HttpResponse rawResponse;
             if (isSNP) {
@@ -46,33 +50,43 @@ public class BioCommonsHelper {
             } else {
                 rawResponse = httpClient.execute(httpPostLeftAnchorTrue);
             }
-            ObjectMapper mapper = new ObjectMapper();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(rawResponse.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                try {
-                    BioCommonsVCFVariant[] bioCommonsVCFVariantArray = mapper.readValue(line, BioCommonsVCFVariant[].class);
-                    bioCommonsVCFVariant = bioCommonsVCFVariantArray[0];
-                } catch (UnrecognizedPropertyException e) {
-                    LOGGER.info("Somethings went wrong while retrieving the information with DNA notation: {} from BioCommons", DNANotation);
-                }
-
-            }
+            String response = convertInputStreamToString(rawResponse.getEntity().getContent());
+            bioCommonsVCFVariants = convertToBioCommonsVariants(response);
         } catch (IOException e) {
             e.printStackTrace();
+            bioCommonsVCFVariants = null;
         }
-        return bioCommonsVCFVariant;
+        return bioCommonsVCFVariants;
     }
 
-    private String createJSON(String genomicDNANotation) {
+    private String createJSONArray(ArrayList<String> dnaNotations) {
         String json = "";
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            json = objectMapper.writeValueAsString(genomicDNANotation);
-            json = "[" + json + "]";
+            json = objectMapper.writeValueAsString(dnaNotations);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return json;
+    }
+
+    private String convertInputStreamToString(InputStream inputStream) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stringBuilder.toString();
+    }
+
+    private List<BioCommonsVCFVariant> convertToBioCommonsVariants(String jsonArray) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return Arrays.asList(objectMapper.readValue(jsonArray, BioCommonsVCFVariant[].class));
     }
 }

@@ -10,6 +10,7 @@ public class VCFVariant {
     private boolean validVariant;
     private ClassificationType classification;
     private Variant rawVariant;
+    private String dnaNotation;
 
     public VCFVariant(String chromosome, int position, String REF, String ALT, ClassificationType classification, Variant rawVariant) {
         this.chromosome = chromosome;
@@ -50,6 +51,14 @@ public class VCFVariant {
 
     public Variant getRawVariant() {
         return rawVariant;
+    }
+
+    public void setDnaNotation(String dnaNotation) {
+        this.dnaNotation = dnaNotation;
+    }
+
+    public String getDnaNotation() {
+        return dnaNotation;
     }
 
     public static class Comparators {

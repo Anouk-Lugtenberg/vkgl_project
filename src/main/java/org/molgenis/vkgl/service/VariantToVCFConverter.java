@@ -11,6 +11,7 @@ import org.molgenis.vkgl.model.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class VariantToVCFConverter {
@@ -22,9 +23,14 @@ public class VariantToVCFConverter {
         convertRadboudVariants(variants.getRadboudVariants());
         convertCartageniaVariants(variants.getCartageniaVariants());
         convertHGVSVariants(variants.getHGVSVariants());
+        //removes invalid variant from checks within converters
+        removeInvalidVariants();
+        checkVariantsWithBioCommons();
+        //removes invalid variants from check with biocommons
         removeInvalidVariants();
         sortVariants();
-        validateVariants();
+        removeDoubleVCFVariants();
+        countVariantsWhichAreValid();
         writeVCFVariantsToFile(outputDirectory);
     }
 
@@ -38,11 +44,12 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<RadboudVariant> radboudVariants = entry.getValue();
+            LOGGER.info("Number of variants for UMC: {} is {} before starting validation process", nameUMC, radboudVariants.size());
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (RadboudVariant variant : radboudVariants) {
                 RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
                 VCFVariant vcfVariant = radboudToVCFConverter.convertToVCF();
-                checkVariantWithBioCommons(variant.getcDNANotation(), variant, vcfVariant);
+                vcfVariant.setDnaNotation(checkDNANotation(variant.getcDNANotation()));
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
@@ -63,8 +70,7 @@ public class VariantToVCFConverter {
             for (CartageniaVariant variant : cartageniaVariants) {
                 RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
                 VCFVariant vcfVariant = radboudToVCFConverter.convertToVCF();
-                String cDNANotation = variant.getTranscript() + ":" + variant.getcDNANotation();
-                checkVariantWithBioCommons(cDNANotation, variant, vcfVariant);
+                vcfVariant.setDnaNotation(variant.getTranscript() + ":" + variant.getcDNANotation());
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
@@ -85,32 +91,60 @@ public class VariantToVCFConverter {
             for (HGVSVariant variant : HGVSVariants) {
                 HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(variant);
                 VCFVariant vcfVariant = hgvsToVCFConverter.convertToVCF();
-                checkVariantWithBioCommons(variant.getGenomicDNA(), variant, vcfVariant);
+                vcfVariant.setDnaNotation(variant.getGenomicDNA());
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
         }
     }
 
-    private void checkVariantWithBioCommons(String dnaNotation, Variant variant, VCFVariant vcfVariant) {
-        BioCommonsVCFVariant bioCommonsVCFVariant;
-        if (variant.getVariantType() == VariantType.SNP) {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(dnaNotation, true);
-        } else {
-            bioCommonsVCFVariant = bioCommonsHelper.postDNANotation(dnaNotation, false);
-        }
+    private String checkDNANotation(String dnaNotation) {
+            return dnaNotation.replace(",", ".").replace("::", ":");
+    }
 
+    private void checkVariantsWithBioCommons() {
+        for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariantsPerUMC.entrySet()) {
+            String nameUMC = entry.getKey();
+            ArrayList<VCFVariant> vcfVariantSNPs = new ArrayList<>();
+            ArrayList<VCFVariant> vcfVariantsOtherTypes = new ArrayList<>();
+            LOGGER.info("Checking created VCF Variants with BioCommons for {}", nameUMC);
+            ArrayList<VCFVariant> vcfVariants = entry.getValue();
+            for (VCFVariant vcfVariant : vcfVariants) {
+                if (vcfVariant.getRawVariant().getVariantType() == VariantType.SNP) {
+                    vcfVariantSNPs.add(vcfVariant);
+                } else {
+                    vcfVariantsOtherTypes.add(vcfVariant);
+                }
+            }
+
+            List<BioCommonsVCFVariant> bioCommonsVCFVariantListSNPs = bioCommonsHelper.getBioCommonsVariants(vcfVariantSNPs, true);
+            List<BioCommonsVCFVariant> bioCommonsVCFVariantListOtherTypes = bioCommonsHelper.getBioCommonsVariants(vcfVariantsOtherTypes, false);
+
+            //Compares the variants based on their position in the lists.
+            for (int i = 0; i < vcfVariantSNPs.size(); i++) {
+                compareVariants(bioCommonsVCFVariantListSNPs.get(i), vcfVariantSNPs.get(i));
+            }
+            for (int i = 0; i < vcfVariantsOtherTypes.size(); i++) {
+                compareVariants(bioCommonsVCFVariantListOtherTypes.get(i), vcfVariantsOtherTypes.get(i));
+            }
+        }
+    }
+
+    private void compareVariants(BioCommonsVCFVariant bioCommonsVCFVariant, VCFVariant vcfVariant) {
         if (bioCommonsVCFVariant.getError() == null) {
             if (!sameVariant(bioCommonsVCFVariant, vcfVariant)) {
-                LOGGER.info("{}: {}", variant.getLineNumber(), variant.getRawInformation());
+                LOGGER.info("{}: {}", vcfVariant.getRawVariant().getLineNumber(), vcfVariant.getRawVariant().getRawInformation());
                 LOGGER.info("VCF variant created is not the same as the one created with bio commons");
-                LOGGER.info("VCF variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}", vcfVariant.getChromosome(), vcfVariant.getPosition(), vcfVariant.getREF(), vcfVariant.getALT() );
-                LOGGER.info("BioCommons variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}\n", bioCommonsVCFVariant.getChrom(), bioCommonsVCFVariant.getPos(), bioCommonsVCFVariant.getRef(), bioCommonsVCFVariant.getAlt());
+                LOGGER.info("VCF variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}", vcfVariant.getChromosome(),
+                        vcfVariant.getPosition(), vcfVariant.getREF(), vcfVariant.getALT() );
+                LOGGER.info("BioCommons variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}\n", bioCommonsVCFVariant.getChrom(),
+                        bioCommonsVCFVariant.getPos(), bioCommonsVCFVariant.getRef(), bioCommonsVCFVariant.getAlt());
+                vcfVariant.setValidVariant(false);
             }
         } else {
-            LOGGER.info("{}: {}", variant.getLineNumber(), variant.getRawInformation());
-            LOGGER.info("BioCommons raised an error while creating a variant");
-            LOGGER.info("Error: {}\n", bioCommonsVCFVariant.getError());
+            LOGGER.info("{}: {}", vcfVariant.getRawVariant().getLineNumber(), vcfVariant.getRawVariant().getRawInformation());
+            LOGGER.info("BioCommons raised an error while creating a variant. Error: {}\n", bioCommonsVCFVariant.getError());
+            vcfVariant.setValidVariant(false);
         }
     }
 
@@ -130,7 +164,7 @@ public class VariantToVCFConverter {
         VCFVariantsPerUMC.put(nameUMC, vcfVariants);
     }
 
-    private void validateVariants() {
+    private void removeDoubleVCFVariants() {
         VariantValidator variantValidator = new VariantValidator(VCFVariantsPerUMC);
         variantValidator.checkDoubleVCFNotations();
         removeInvalidVariants();
@@ -151,6 +185,14 @@ public class VariantToVCFConverter {
     private void sortVariants() {
         for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariantsPerUMC.entrySet()) {
             entry.getValue().sort(VCFVariant.Comparators.CHROMOSOME_AND_POSITION);
+        }
+    }
+
+    private void countVariantsWhichAreValid() {
+        for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariantsPerUMC.entrySet()) {
+            String nameUMC = entry.getKey();
+            int validVariants = entry.getValue().size();
+            LOGGER.info("{} valid variants for UMC: {}", validVariants, nameUMC);
         }
     }
 
