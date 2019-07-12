@@ -1,5 +1,6 @@
 package org.molgenis.vkgl;
 import org.molgenis.vkgl.IO.RawFileProcessor;
+import org.molgenis.vkgl.service.VCFConverter;
 
 import java.util.Arrays;
 
@@ -32,5 +33,8 @@ public class Main {
 
         RawFileProcessor rawFileProcessor = new RawFileProcessor();
         rawFileProcessor.start(args);
+
+//        String bases = VCFConverter.getBasesFromPosition("1", 1684345, 1684375);
+//        System.out.println("bases = " + bases);
     }
 }

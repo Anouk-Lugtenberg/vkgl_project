@@ -318,4 +318,46 @@ class RadboudToVCFConverterTest {
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
     }
+
+    @Test
+    void convertSingleDuplications() {
+        RadboudVariant radboudVariantSingleDuplication = new RadboudVariant();
+        radboudVariantSingleDuplication.setChromosome("1");
+        radboudVariantSingleDuplication.setStart(4);
+        radboudVariantSingleDuplication.setStop(4);
+        radboudVariantSingleDuplication.setREF("");
+        radboudVariantSingleDuplication.setALT("");
+        radboudVariantSingleDuplication.setClassification("class 1");
+        radboudVariantSingleDuplication.setVariantType("dup");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariantSingleDuplication);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("1", 3, "G", "GT", ClassificationType.BENIGN, radboudVariantSingleDuplication);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDuplicationMultipleNucleotides() {
+        RadboudVariant radboudVariantMultipleNucleotides = new RadboudVariant();
+        radboudVariantMultipleNucleotides.setChromosome("6");
+        radboudVariantMultipleNucleotides.setStart(14);
+        radboudVariantMultipleNucleotides.setStop(17);
+        radboudVariantMultipleNucleotides.setREF("");
+        radboudVariantMultipleNucleotides.setALT("");
+        radboudVariantMultipleNucleotides.setClassification("class 1");
+        radboudVariantMultipleNucleotides.setVariantType("dup");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariantMultipleNucleotides);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("6", 10, "T", "TGCTA", ClassificationType.BENIGN, radboudVariantMultipleNucleotides);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+
 }

@@ -9,7 +9,6 @@ import org.molgenis.vkgl.model.HGVSVariant;
 import org.molgenis.vkgl.model.VCFVariant;
 
 import java.io.File;
-import java.util.regex.Matcher;
 
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
 
@@ -237,6 +236,40 @@ class HGVSToVCFConverterTest {
         VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
 
         VCFVariant expectedVCFVariant = new VCFVariant("7", 3, "CAGA", "C", ClassificationType.VOUS, hgvsVariantDifferentNucleotidesDeletion);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertSingleDuplication() {
+        HGVSVariant hgvsVariantSingleDuplication = new HGVSVariant();
+        hgvsVariantSingleDuplication.setChromosome("1");
+        hgvsVariantSingleDuplication.setGenomicDNA("NC_000001.10:g.4dup");
+        hgvsVariantSingleDuplication.setClassification("?");
+        hgvsVariantSingleDuplication.setVariantType(hgvsVariantSingleDuplication.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantSingleDuplication);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("1", 3, "G", "GT", ClassificationType.VOUS, hgvsVariantSingleDuplication);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDuplicationMultipleNucleotides() {
+        HGVSVariant hgvsVariantMultipleNucleotides = new HGVSVariant();
+        hgvsVariantMultipleNucleotides.setChromosome("6");
+        hgvsVariantMultipleNucleotides.setGenomicDNA("NC_000001.10:g.14_17dup");
+        hgvsVariantMultipleNucleotides.setClassification("?");
+        hgvsVariantMultipleNucleotides.setVariantType(hgvsVariantMultipleNucleotides.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariantMultipleNucleotides);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("6", 10, "T", "TGCTA", ClassificationType.VOUS, hgvsVariantMultipleNucleotides);
         expectedVCFVariant.setValidVariant(true);
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));

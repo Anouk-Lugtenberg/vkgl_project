@@ -1,7 +1,6 @@
 package org.molgenis.vkgl.service;
 
 import org.molgenis.vkgl.model.*;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +36,8 @@ public class HGVSToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertSNP() {
-        int start = getPositionSNP();
+        StartAndStopPosition startAndStopPosition = getStartAndStopPosition();
+        int start = startAndStopPosition.getStart();
         ReferenceAndAlternative referenceAndAlternative = getReferenceAndAlternativeSNP();
         String REF = referenceAndAlternative.getReference();
         String ALT = referenceAndAlternative.getAlternative();
@@ -49,18 +49,6 @@ public class HGVSToVCFConverter implements VCFConverter {
             vcfVariant.setValidVariant(false);
         }
         return vcfVariant;
-    }
-
-    private int getPositionSNP() {
-        int position;
-        Pattern pattern = Pattern.compile("\\.(\\d*)[ACGT]");
-        Matcher matcher = pattern.matcher(genomicDNA);
-        if (matcher.find()) {
-            position = Integer.parseInt(matcher.group(1));
-        } else {
-            position = 0;
-        }
-        return position;
     }
 
     private ReferenceAndAlternative getReferenceAndAlternativeSNP() {
@@ -80,46 +68,16 @@ public class HGVSToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertInsertion() {
-        StartAndStopPosition startAndStop = getStartAndStopInsertion();
+        StartAndStopPosition startAndStop = getStartAndStopPosition();
         int start = startAndStop.getStart();
-        int position;
         String ALT = getAlternativeInsertion();
-        if (ALT.length() == 1) {
-            position = VCFConverter.moveNucleotidesMostLeftPosition(ALT, start, chromosome);
-        } else if (ALT.chars().allMatch(c -> c == getAlternativeInsertion().charAt(0))) {
-            //Substring from first base of ALT, because all the nucleotides are the same in the ALT.
-            position = VCFConverter.moveNucleotidesMostLeftPosition(ALT.substring(0, 1), start, chromosome);
-        } else {
-            PositionAndNucleotides positionAndAlternative = VCFConverter.moveDifferentNucleotidesMostLeftPosition(start, ALT, chromosome);
-            position = positionAndAlternative.getPosition();
-            ALT = positionAndAlternative.getNucleotides();
-        }
-//        if (position != startAndStop.getStart()) {
-//            LOGGER.info("{}: {}", HGVSVariant.getLineNumber(), HGVSVariant.getRawInformation());
-//            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}\n", start, position);
-//        }
 
-        String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
-        String newALT = referenceGenomeBuild + ALT;
-        VCFVariant vcfVariant = new VCFVariant(chromosome, position, referenceGenomeBuild, newALT, HGVSVariant.getClassification(), HGVSVariant);
-        vcfVariant.setValidVariant(validateInsertion());
-        return vcfVariant;
+        PositionAndNucleotides positionAndNucleotides = moveNucleotidesInsertionAndDuplication(ALT, start);
+        return createVCFVariantInsertionAndDuplication(positionAndNucleotides);
     }
 
     private boolean validateInsertion() {
         return true;
-    }
-
-    private StartAndStopPosition getStartAndStopInsertion() {
-        int start = 0;
-        int stop = 0;
-        Pattern pattern = Pattern.compile("g.(\\d*)_(\\d*)ins");
-        Matcher matcher = pattern.matcher(genomicDNA);
-        if (matcher.find()) {
-            start = Integer.parseInt(matcher.group(1));
-            stop = Integer.parseInt(matcher.group(2));
-        }
-        return new StartAndStopPosition(start, stop);
     }
 
     private String getAlternativeInsertion() {
@@ -134,7 +92,7 @@ public class HGVSToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertDeletion() {
-        StartAndStopPosition startAndStop = getStartAndStopDeletion();
+        StartAndStopPosition startAndStop = getStartAndStopPosition();
         int start = startAndStop.getStart();
         int stop = startAndStop.getStop();
         PositionAndNucleotides positionAndNucleotides = VCFConverter.moveDeletionMostLeftPosition(chromosome, start, stop);
@@ -148,27 +106,16 @@ public class HGVSToVCFConverter implements VCFConverter {
         return vcfVariant;
     }
 
-    private StartAndStopPosition getStartAndStopDeletion() {
-        int start = 0;
-        int stop = 0;
-        Pattern patternStartAndStop = Pattern.compile("g.(\\d*)_(\\d*)del");
-        Matcher matcherStartAndStop = patternStartAndStop.matcher(genomicDNA);
-        Pattern patternStart = Pattern.compile("g.(\\d*)del");
-        Matcher matcherStart = patternStart.matcher(genomicDNA);
-        if (matcherStartAndStop.find()) {
-            start = Integer.parseInt(matcherStartAndStop.group(1));
-            stop = Integer.parseInt(matcherStartAndStop.group(2));
-        } else if (matcherStart.find()) {
-            int position = Integer.parseInt(matcherStart.group(1));
-            start = position;
-            stop = position;
-        }
-        return new StartAndStopPosition(start, stop);
-    }
-
     @Override
     public VCFVariant convertDuplication() {
-        return null;
+        StartAndStopPosition startAndStop = getStartAndStopPosition();
+        String ALT = VCFConverter.getBasesFromPosition(chromosome, startAndStop.getStart(), startAndStop.getStop());
+
+        //start -1 because the check should begin one base before the duplication
+        int start = startAndStop.getStart() - 1;
+        PositionAndNucleotides positionAndNucleotides = moveNucleotidesInsertionAndDuplication(ALT, start);
+
+        return createVCFVariantInsertionAndDuplication(positionAndNucleotides);
     }
 
     @Override
@@ -179,5 +126,51 @@ public class HGVSToVCFConverter implements VCFConverter {
     @Override
     public org.molgenis.vkgl.model.VCFVariant convertNotClassified() {
         return null;
+    }
+
+    private StartAndStopPosition getStartAndStopPosition() {
+        int start = 0;
+        int stop = 0;
+        Pattern patternTwoDigits = Pattern.compile("g.(\\d*)_(\\d*)");
+        Matcher matcherTwoDigits = patternTwoDigits.matcher(genomicDNA);
+        Pattern patternOneDigit = Pattern.compile("g.(\\d*)");
+        Matcher matcherOneDigit = patternOneDigit.matcher(genomicDNA);
+        if (matcherTwoDigits.find()) {
+            start = Integer.parseInt(matcherTwoDigits.group(1));
+            stop = Integer.parseInt(matcherTwoDigits.group(2));
+        } else if (matcherOneDigit.find()) {
+            start = Integer.parseInt(matcherOneDigit.group(1));
+            stop = start;
+        }
+        return new StartAndStopPosition(start, stop);
+    }
+
+    private PositionAndNucleotides moveNucleotidesInsertionAndDuplication(String ALT, int start) {
+        int position;
+        String copyOfALT = ALT;
+        if (ALT.length() == 1) {
+            position = VCFConverter.moveNucleotidesMostLeftPosition(ALT, start, chromosome);
+        } else if (ALT.chars().allMatch(c -> c == copyOfALT.charAt(0))) {
+            //Substring from first base of ALT, because all the nucleotides are the same in the ALT.
+            position = VCFConverter.moveNucleotidesMostLeftPosition(ALT.substring(0, 1), start, chromosome);
+        } else {
+            PositionAndNucleotides positionAndAlternative = VCFConverter.moveDifferentNucleotidesMostLeftPosition(start, ALT, chromosome);
+            position = positionAndAlternative.getPosition();
+            ALT = positionAndAlternative.getNucleotides();
+        }
+        return new PositionAndNucleotides(position, ALT);
+    }
+
+    private VCFVariant createVCFVariantInsertionAndDuplication(PositionAndNucleotides positionAndNucleotides) {
+        int position = positionAndNucleotides.getPosition();
+        String ALT = positionAndNucleotides.getNucleotides();
+
+        String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
+        String newALT = referenceGenomeBuild + ALT;
+        VCFVariant vcfVariant = new VCFVariant(chromosome, position, referenceGenomeBuild, newALT, HGVSVariant.getClassification(), HGVSVariant);
+
+        //todo validate
+        vcfVariant.setValidVariant(validateInsertion());
+        return vcfVariant;
     }
 }

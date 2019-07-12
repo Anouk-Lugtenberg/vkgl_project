@@ -127,7 +127,13 @@ public class RadboudToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertDuplication() {
-        //Duplication is the same conversion as for an insertion for Radboud variants.
+        //If no ALT is given, the nucleotides between start-stop are used
+        if (ALT.length() == 0) {
+            ALT = VCFConverter.getBasesFromPosition(chromosome, start, stop);
+            start = start - 1;
+        }
+
+        //The movement of the position is the same as for insertion variants
         return convertInsertion();
     }
 

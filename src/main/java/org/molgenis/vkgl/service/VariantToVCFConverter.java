@@ -66,6 +66,7 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<CartageniaVariant> cartageniaVariants = entry.getValue();
+            LOGGER.info("Number of variants for UMC: {} is {} before starting validation process", nameUMC, cartageniaVariants.size());
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (CartageniaVariant variant : cartageniaVariants) {
                 RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(variant);
@@ -87,11 +88,13 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<HGVSVariant> HGVSVariants = entry.getValue();
+            LOGGER.info("Number of variants for UMC: {} is {} before starting validation process", nameUMC, HGVSVariants.size());
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (HGVSVariant variant : HGVSVariants) {
                 HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(variant);
                 VCFVariant vcfVariant = hgvsToVCFConverter.convertToVCF();
-                vcfVariant.setDnaNotation(variant.getGenomicDNA());
+                String[] cDNANotations = variant.getcDNANotation().split(",");
+                vcfVariant.setDnaNotation(cDNANotations[0]);
                 vcfVariants.add(vcfVariant);
             }
             addToVCFList(nameUMC, vcfVariants);
