@@ -21,6 +21,10 @@ public class VCFVariant {
         this.rawVariant = rawVariant;
     }
 
+    public VCFVariant() {
+
+    }
+
     public String getChromosome() {
         return chromosome;
     }
@@ -64,7 +68,9 @@ public class VCFVariant {
     public static class Comparators {
         public static final Comparator<VCFVariant> CHROMOSOME_AND_POSITION =
                 Comparator.comparing(VCFVariant::getChromosome, Comparator.comparingInt(Comparators::extractInt))
-                .thenComparing(VCFVariant::getPosition);
+                        .thenComparing(VCFVariant::getPosition)
+                        .thenComparing(VCFVariant::getREF)
+                        .thenComparing(VCFVariant::getALT);
 
         static int extractInt(String chromosome) {
             String num = chromosome.replaceAll("\\D", "");

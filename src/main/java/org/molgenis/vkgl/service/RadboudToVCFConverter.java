@@ -29,16 +29,36 @@ public class RadboudToVCFConverter implements VCFConverter {
     public VCFVariant convertToVCF() {
         switch (radboudVariant.getVariantType()) {
             case SNP:
-                VCFVariant = convertSNP();
+                if (checkStartAndStopPositionSNP(start, stop)) {
+                    VCFVariant = convertSNP();
+                } else {
+                    VCFVariant = new VCFVariant();
+                    VCFVariant.setValidVariant(false);
+                }
                 break;
             case INSERTION:
-                VCFVariant = convertInsertion();
+                if (checkStartAndStopPositions(start, stop)) {
+                    VCFVariant = convertInsertion();
+                } else {
+                    VCFVariant = new VCFVariant();
+                    VCFVariant.setValidVariant(false);
+                }
                 break;
             case DELETION:
-                VCFVariant = convertDeletion();
+                if (checkStartAndStopPositions(start, stop)) {
+                    VCFVariant = convertDeletion();
+                } else {
+                    VCFVariant = new VCFVariant();
+                    VCFVariant.setValidVariant(false);
+                }
                 break;
             case DUPLICATION:
-                VCFVariant = convertDuplication();
+                if (checkStartAndStopPositions(start, stop)) {
+                    VCFVariant = convertDuplication();
+                } else {
+                    VCFVariant = new VCFVariant();
+                    VCFVariant.setValidVariant(false);
+                }
                 break;
             case DELETION_INSERTION:
                 VCFVariant = convertDeletionInsertion();
@@ -78,11 +98,6 @@ public class RadboudToVCFConverter implements VCFConverter {
             ALT = positionAndAlternative.getNucleotides();
         }
 
-//        if (position != start) {
-//            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-//            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}", start, position);
-//        }
-
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
         String newALT = referenceGenomeBuild + ALT;
         VCFVariant vcfVariant = new VCFVariant(chromosome, position, referenceGenomeBuild, newALT, classification, radboudVariant);
@@ -97,13 +112,15 @@ public class RadboudToVCFConverter implements VCFConverter {
 
     @Override
     public VCFVariant convertDeletion() {
+        //The deletions from cartagenia are sometimes differently formatted:103471457	103471462	CATCAT	CAT
+        //the CAT from the REF is not part of the deletion here.
+        if (ALT.matches("[ACGT]")) {
+            stop = stop - ALT.length();
+            REF = REF.replaceFirst(ALT, "");
+        }
+
         PositionAndNucleotides positionAndNucleotides = VCFConverter.moveDeletionMostLeftPosition(chromosome, start, stop);
         int position = positionAndNucleotides.getPosition();
-
-//        if (position != start) {
-//            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-//            LOGGER.info("Variant could be placed more to the left, position changed from {} to {}\n", start, position);
-//        }
 
         String referenceGenomeBuild = VCFConverter.getBasesFromPosition(chromosome, position, position);
         String newREF = referenceGenomeBuild + positionAndNucleotides.getNucleotides();
@@ -130,8 +147,9 @@ public class RadboudToVCFConverter implements VCFConverter {
         //If no ALT is given, the nucleotides between start-stop are used
         if (ALT.length() == 0) {
             ALT = VCFConverter.getBasesFromPosition(chromosome, start, stop);
-            start = start - 1;
         }
+
+//        start = start - 1;
 
         //The movement of the position is the same as for insertion variants
         return convertInsertion();
@@ -140,12 +158,8 @@ public class RadboudToVCFConverter implements VCFConverter {
     @Override
     public VCFVariant convertDeletionInsertion() {
         boolean validVariant;
-        try {
-            String GRChREF = VCFConverter.getBasesFromPosition(chromosome, start, stop);
-            validVariant = validateDeletionInsertion(GRChREF);
-        } catch (IllegalArgumentException e) {
-            validVariant = false;
-        }
+        String GRChREF = VCFConverter.getBasesFromPosition(chromosome, start, stop);
+        validVariant = validateDeletionInsertion(GRChREF);
         VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, classification, radboudVariant);
         vcfVariant.setValidVariant(validVariant);
         return vcfVariant;
@@ -169,6 +183,24 @@ public class RadboudToVCFConverter implements VCFConverter {
             validVariant = true;
         }
         return validVariant;
+    }
+
+    private boolean checkStartAndStopPositions(int start, int stop) {
+        boolean validPositions = true;
+        if (stop < start) {
+            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+            LOGGER.info("Stop position is of smaller value than start position. Flagging as invalid.\n");
+            validPositions = false;
+        }
+        return validPositions;
+    }
+
+    private boolean checkStartAndStopPositionSNP(int start, int stop) {
+        if (start != stop) {
+            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+            LOGGER.info("Start and stop position for SNP is not the same. Flagging as invalid.\n");
+        }
+        return start == stop;
     }
 
     @Override

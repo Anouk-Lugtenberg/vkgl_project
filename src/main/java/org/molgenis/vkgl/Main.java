@@ -33,8 +33,5 @@ public class Main {
 
         RawFileProcessor rawFileProcessor = new RawFileProcessor();
         rawFileProcessor.start(args);
-
-//        String bases = VCFConverter.getBasesFromPosition("1", 1684345, 1684375);
-//        System.out.println("bases = " + bases);
     }
 }

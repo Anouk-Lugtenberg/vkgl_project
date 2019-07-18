@@ -18,6 +18,7 @@ public class VariantToVCFConverter {
     private static Logger LOGGER = LogManager.getLogger(VariantToVCFConverter.class.getName());
     private Map<String, ArrayList<VCFVariant>> VCFVariantsPerUMC = new HashMap<>();
     private BioCommonsHelper bioCommonsHelper = new BioCommonsHelper();
+    private Map<String, Integer> countVariantsBeforeValidation = new HashMap<>();
 
     public void convertVariants(VariantParser variants, String outputDirectory) {
         convertRadboudVariants(variants.getRadboudVariants());
@@ -30,7 +31,7 @@ public class VariantToVCFConverter {
         removeInvalidVariants();
         sortVariants();
         removeDoubleVCFVariants();
-        countVariantsWhichAreValid();
+        logNumberOfValidVariants();
         writeVCFVariantsToFile(outputDirectory);
     }
 
@@ -44,6 +45,7 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<RadboudVariant> radboudVariants = entry.getValue();
+            countVariantsBeforeValidation.put(nameUMC, radboudVariants.size());
             LOGGER.info("Number of variants for UMC: {} is {} before starting validation process", nameUMC, radboudVariants.size());
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (RadboudVariant variant : radboudVariants) {
@@ -66,6 +68,7 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<CartageniaVariant> cartageniaVariants = entry.getValue();
+            countVariantsBeforeValidation.put(nameUMC, cartageniaVariants.size());
             LOGGER.info("Number of variants for UMC: {} is {} before starting validation process", nameUMC, cartageniaVariants.size());
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (CartageniaVariant variant : cartageniaVariants) {
@@ -88,6 +91,7 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             LOGGER.info("Converting variants from UMC: {} to VCFVariants.", nameUMC);
             ArrayList<HGVSVariant> HGVSVariants = entry.getValue();
+            countVariantsBeforeValidation.put(nameUMC, HGVSVariants.size());
             LOGGER.info("Number of variants for UMC: {} is {} before starting validation process", nameUMC, HGVSVariants.size());
             ArrayList<VCFVariant> vcfVariants = new ArrayList<>();
             for (HGVSVariant variant : HGVSVariants) {
@@ -210,11 +214,12 @@ public class VariantToVCFConverter {
         }
     }
 
-    private void countVariantsWhichAreValid() {
+    private void logNumberOfValidVariants() {
         for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
+            int variantsBeforeValidation = countVariantsBeforeValidation.get(nameUMC);
             int validVariants = entry.getValue().size();
-            LOGGER.info("{} valid variants for UMC: {}", validVariants, nameUMC);
+            LOGGER.info("{} valid variants for UMC: {}. Started with {} variants.", validVariants, nameUMC, variantsBeforeValidation);
         }
     }
 

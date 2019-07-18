@@ -34,9 +34,6 @@ public interface VCFConverter {
      */
     static String getBasesFromPosition(String chromosome, int start, int stop) {
         String subsequence = null;
-        if (stop < start) {
-            throw new IllegalArgumentException(stop + " is of lower value than " + start + ", cannot retrieve subsequence");
-        }
         try {
             ReferenceSequenceFile faidx = new IndexedFastaSequenceFile(fastaFile);
             subsequence = faidx.getSubsequenceAt(chromosome, start, stop).getBaseString().toUpperCase();

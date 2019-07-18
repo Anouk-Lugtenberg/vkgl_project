@@ -359,5 +359,104 @@ class RadboudToVCFConverterTest {
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
     }
 
+    @Test
+    void convertDuplicationThatDoesNotMove() {
+        RadboudVariant radboudVariant = new RadboudVariant();
+        radboudVariant.setChromosome("8");
+        radboudVariant.setStart(6);
+        radboudVariant.setStop(6);
+        radboudVariant.setREF("");
+        radboudVariant.setALT("TGGC");
+        radboudVariant.setClassification("class 1");
+        radboudVariant.setVariantType("dup");
 
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariant);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("8", 6, "G", "GTGGC", ClassificationType.BENIGN, radboudVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertSimpleDeletionInsertion() {
+        RadboudVariant radboudVariant = new RadboudVariant();
+        radboudVariant.setChromosome("5");
+        radboudVariant.setStart(3);
+        radboudVariant.setStop(5);
+        radboudVariant.setREF("");
+        radboudVariant.setALT("A");
+        radboudVariant.setClassification("class 1");
+        radboudVariant.setVariantType("delins");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariant);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("5", 3, "TGT", "A", ClassificationType.BENIGN, radboudVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertInsertionWithZeroAsRef() {
+        RadboudVariant radboudVariant = new RadboudVariant();
+        radboudVariant.setChromosome("1");
+        radboudVariant.setStart(4);
+        radboudVariant.setStop(4);
+        radboudVariant.setREF("0");
+        radboudVariant.setALT("A");
+        radboudVariant.setClassification("class 1");
+        radboudVariant.setVariantType("insertion");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariant);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("1", 4, "T", "TA", ClassificationType.BENIGN, radboudVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionWithZeroAsAlt() {
+        RadboudVariant radboudVariant = new RadboudVariant();
+        radboudVariant.setChromosome("1");
+        radboudVariant.setStart(4);
+        radboudVariant.setStop(5);
+        radboudVariant.setREF("TC");
+        radboudVariant.setALT("0");
+        radboudVariant.setClassification("class 1");
+        radboudVariant.setVariantType("deletion");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariant);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("1", 3, "GTC", "G", ClassificationType.BENIGN, radboudVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionWithNucleotidesInAlt() {
+        RadboudVariant radboudVariant = new RadboudVariant();
+        radboudVariant.setChromosome("9");
+        radboudVariant.setStart(4);
+        radboudVariant.setStop(10);
+        radboudVariant.setREF("AAAAAAA");
+        radboudVariant.setALT("AAAA");
+        radboudVariant.setClassification("class 1");
+        radboudVariant.setVariantType("deletion");
+
+        RadboudToVCFConverter radboudToVCFConverter = new RadboudToVCFConverter(radboudVariant);
+        VCFVariant actualVCFVariant = radboudToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("9", 1, "GAAA", "G", ClassificationType.BENIGN, radboudVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
 }
+

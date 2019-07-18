@@ -3,9 +3,8 @@ package org.molgenis.vkgl.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.molgenis.vkgl.model.VCFVariant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 public class VariantValidator {
     private Map<String, ArrayList<VCFVariant>> vcfVariantsPerUMC;
