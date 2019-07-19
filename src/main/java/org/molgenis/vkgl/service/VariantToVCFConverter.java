@@ -120,24 +120,26 @@ public class VariantToVCFConverter {
     private void checkVariantsWithBioCommons() {
         for (Map.Entry<String, ArrayList<VCFVariant>> entry : VCFVariantsPerUMC.entrySet()) {
             String nameUMC = entry.getKey();
-            ArrayList<VCFVariant> vcfVariantSNPs = new ArrayList<>();
+            ArrayList<VCFVariant> vcfVariantWithoutAnchor = new ArrayList<>();
             ArrayList<VCFVariant> vcfVariantsOtherTypes = new ArrayList<>();
             LOGGER.info("Checking created VCF Variants with BioCommons for {}", nameUMC);
             ArrayList<VCFVariant> vcfVariants = entry.getValue();
             for (VCFVariant vcfVariant : vcfVariants) {
-                if (vcfVariant.getRawVariant().getVariantType() == VariantType.SNP) {
-                    vcfVariantSNPs.add(vcfVariant);
+                if (vcfVariant.getRawVariant().getVariantType() == VariantType.SNP ||
+                    vcfVariant.getRawVariant().getVariantType() == VariantType.DELETION_INSERTION) {
+                    vcfVariantWithoutAnchor.add(vcfVariant);
                 } else {
                     vcfVariantsOtherTypes.add(vcfVariant);
                 }
             }
 
-            List<BioCommonsVCFVariant> bioCommonsVCFVariantListSNPs = bioCommonsHelper.getBioCommonsVariants(vcfVariantSNPs, true);
+
+            List<BioCommonsVCFVariant> bioCommonsVCFVariantListWithoutAnchor = bioCommonsHelper.getBioCommonsVariants(vcfVariantWithoutAnchor, true);
             List<BioCommonsVCFVariant> bioCommonsVCFVariantListOtherTypes = bioCommonsHelper.getBioCommonsVariants(vcfVariantsOtherTypes, false);
 
             //Compares the variants based on their position in the lists.
-            for (int i = 0; i < vcfVariantSNPs.size(); i++) {
-                compareVariants(bioCommonsVCFVariantListSNPs.get(i), vcfVariantSNPs.get(i));
+            for (int i = 0; i < vcfVariantWithoutAnchor.size(); i++) {
+                compareVariants(bioCommonsVCFVariantListWithoutAnchor.get(i), vcfVariantWithoutAnchor.get(i));
             }
             for (int i = 0; i < vcfVariantsOtherTypes.size(); i++) {
                 compareVariants(bioCommonsVCFVariantListOtherTypes.get(i), vcfVariantsOtherTypes.get(i));

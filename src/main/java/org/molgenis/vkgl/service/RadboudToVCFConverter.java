@@ -1,9 +1,6 @@
 package org.molgenis.vkgl.service;
 
-import org.molgenis.vkgl.model.ClassificationType;
-import org.molgenis.vkgl.model.PositionAndNucleotides;
-import org.molgenis.vkgl.model.RadboudVariant;
-import org.molgenis.vkgl.model.VCFVariant;
+import org.molgenis.vkgl.model.*;
 
 public class RadboudToVCFConverter implements VCFConverter {
     private RadboudVariant radboudVariant;
@@ -61,7 +58,12 @@ public class RadboudToVCFConverter implements VCFConverter {
                 }
                 break;
             case DELETION_INSERTION:
-                VCFVariant = convertDeletionInsertion();
+                if (checkStartAndStopPositions(start, stop)) {
+                    VCFVariant = convertDeletionInsertion();
+                } else {
+                    VCFVariant = new VCFVariant();
+                    VCFVariant.setValidVariant(false);
+                }
                 break;
             case NOT_CLASSIFIED:
                 VCFVariant = convertNotClassified();
@@ -114,9 +116,11 @@ public class RadboudToVCFConverter implements VCFConverter {
     public VCFVariant convertDeletion() {
         //The deletions from cartagenia are sometimes differently formatted:103471457	103471462	CATCAT	CAT
         //the CAT from the REF is not part of the deletion here.
-        if (ALT.matches("[ACGT]")) {
-            stop = stop - ALT.length();
-            REF = REF.replaceFirst(ALT, "");
+        if (radboudVariant instanceof CartageniaVariant) {
+            if (ALT.matches("[ACGT]+")) {
+                stop = stop - ALT.length();
+                REF = REF.replaceFirst(ALT, "");
+            }
         }
 
         PositionAndNucleotides positionAndNucleotides = VCFConverter.moveDeletionMostLeftPosition(chromosome, start, stop);
@@ -149,38 +153,86 @@ public class RadboudToVCFConverter implements VCFConverter {
             ALT = VCFConverter.getBasesFromPosition(chromosome, start, stop);
         }
 
-//        start = start - 1;
-
         //The movement of the position is the same as for insertion variants
         return convertInsertion();
     }
 
     @Override
     public VCFVariant convertDeletionInsertion() {
-        boolean validVariant;
-        String GRChREF = VCFConverter.getBasesFromPosition(chromosome, start, stop);
-        validVariant = validateDeletionInsertion(GRChREF);
-        VCFVariant vcfVariant = new VCFVariant(chromosome, start, REF, ALT, classification, radboudVariant);
-        vcfVariant.setValidVariant(validVariant);
-        return vcfVariant;
+        boolean validVariant = checkREFandALTDeletionInsertion();
+        if (!validVariant) {
+            VCFVariant vcfVariant = new VCFVariant();
+            vcfVariant.setValidVariant(false);
+            return vcfVariant;
+        } else {
+            VCFVariant vcfVariant = checkIfActualDelIns();
+            if (vcfVariant == null) {
+                vcfVariant = new VCFVariant(chromosome, start, REF, ALT, classification, radboudVariant);
+                vcfVariant.setValidVariant(true);
+            }
+            return vcfVariant;
+        }
     }
 
-    private boolean validateDeletionInsertion(String GRChREF) {
-        boolean validVariant;
+    private VCFVariant checkIfActualDelIns() {
+        stripRightSideDeletionInsertion();
+        stripLeftSideDeletionInsertion();
+        if (ALT.length() == 0) {
+            radboudVariant.setVariantType("del");
+            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+            LOGGER.info("Delins variant is actually a deletion.\n");
+            return convertDeletion();
+        } else if (REF.length() == 0) {
+            radboudVariant.setVariantType("ins");
+            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+            LOGGER.info("Delins variant is actually an insertion.\n");
+            return convertInsertion();
+        } else if (REF.length() == 1 && ALT.length() == 1) {
+            radboudVariant.setVariantType("snp");
+            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+            LOGGER.info("Delins variant is actually a SNP.\n");
+            return convertSNP();
+        } else {
+            return null;
+        }
+    }
+
+    private void stripRightSideDeletionInsertion() {
+        while (REF.substring(REF.length() - 1).equals(ALT.substring(ALT.length() - 1))) {
+            REF = REF.substring(0, REF.length() - 1);
+            ALT = ALT.substring(0, ALT.length() - 1);
+            stop = stop - 1;
+            if (ALT.length() == 0 || REF.length() == 0) {
+                break;
+            }
+        }
+    }
+
+    private void stripLeftSideDeletionInsertion() {
+        while (REF.substring(0, 1).equals(ALT.substring(0, 1))) {
+            REF = REF.substring(1);
+            ALT = ALT.substring(1);
+            stop = stop - 1;
+            if (ALT.length() == 0 || REF.length() == 0) {
+                break;
+            }
+        }
+    }
+
+    private boolean checkREFandALTDeletionInsertion() {
+        String GRChREF = VCFConverter.getBasesFromPosition(chromosome, start, stop);
+        boolean validVariant = true;
         if (REF.length() == 0) {
-            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-            LOGGER.info("No REF available for delins. Flagging as invalid.\n");
-            validVariant = false;
-        } else if (ALT.length() == 0) {
-            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
-            LOGGER.info("No ALT available for delins. Flagging as invalid.\n");
-            validVariant = false;
+            REF = GRChREF;
         } else if (!REF.equals(GRChREF)) {
             LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
             LOGGER.info("Reference genome: {} does not equal reference given for variant: {}. Flagging as invalid.\n", GRChREF, REF);
             validVariant = false;
-        } else {
-            validVariant = true;
+        }
+        if (ALT.length() == 0) {
+            LOGGER.info("{}: {}", radboudVariant.getLineNumber(), radboudVariant.getRawInformation());
+            LOGGER.info("No ALT available for delins. Flagging as invalid.\n");
+            validVariant = false;
         }
         return validVariant;
     }

@@ -274,4 +274,21 @@ class HGVSToVCFConverterTest {
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
     }
+
+    @Test
+    void convertDeletionInsertion() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("11");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.3_4delinsAA");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("11", 3, "TG", "AA", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
 }
