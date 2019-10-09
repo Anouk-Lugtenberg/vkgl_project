@@ -1,11 +1,11 @@
 package org.molgenis.vkgl.model;
 
 public class CartageniaVariant extends RadboudVariant {
-    String timestamp;
-    String id;
-    String location;
-    String effect;
-    String lastUpdatedOn;
+    private String timestamp;
+    private String id;
+    private String location;
+    private String effect;
+    private String lastUpdatedOn;
 
     public String getTimestamp() {
         return timestamp;
@@ -71,26 +71,26 @@ public class CartageniaVariant extends RadboudVariant {
         }
     }
 
-    @Override
-    public void setVariantType(String variantType) {
-        switch (variantType) {
-            case "snp":
-                this.variantType = VariantType.SNP;
-                break;
-            case "insertion":
-                this.variantType = VariantType.INSERTION;
-                break;
-            case "deletion":
-                this.variantType = VariantType.DELETION;
-                break;
-            // They've called these kind of variants substitutions, but for clarification it's called a deletion_insertion here.
-            // One (or multiple bases) are substituted by other base(s).
-            case "substitution":
-                this.variantType = VariantType.DELETION_INSERTION;
-                break;
-            default:
-                this.variantType = VariantType.NOT_CLASSIFIED;
-                break;
-        }
-    }
+//    @Override
+//    public void setVariantType(String variantType) {
+//        switch (variantType) {
+//            case "snp":
+//                this.variantType = VariantType.SNP;
+//                break;
+//            case "insertion":
+//                this.variantType = VariantType.INSERTION;
+//                break;
+//            case "deletion":
+//                this.variantType = VariantType.DELETION;
+//                break;
+//            // They've called these kind of variants substitutions, but for clarification it's called a deletion_insertion here.
+//            // One (or multiple bases) are substituted by other base(s).
+//            case "substitution":
+//                this.variantType = VariantType.DELETION_INSERTION;
+//                break;
+//            default:
+//                this.variantType = VariantType.NOT_CLASSIFIED;
+//                break;
+//        }
+//    }
 }

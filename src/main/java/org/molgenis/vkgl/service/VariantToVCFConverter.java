@@ -108,7 +108,7 @@ public class VariantToVCFConverter {
     /**
      * Replaces ',' with '.' and '::' with ':' (errors mostly found in Radboud data).
      * @param dnaNotation the dnaNotation to be checked
-     * @return a String containg the dna notation with the replacements
+     * @return a String containing the dna notation with the replacements
      */
     private String checkDNANotation(String dnaNotation) {
             return dnaNotation.replace(",", ".").replace("::", ":");
@@ -132,7 +132,6 @@ public class VariantToVCFConverter {
                     vcfVariantsOtherTypes.add(vcfVariant);
                 }
             }
-
 
             List<BioCommonsVCFVariant> bioCommonsVCFVariantListWithoutAnchor = bioCommonsHelper.getBioCommonsVariants(vcfVariantWithoutAnchor, true);
             List<BioCommonsVCFVariant> bioCommonsVCFVariantListOtherTypes = bioCommonsHelper.getBioCommonsVariants(vcfVariantsOtherTypes, false);
@@ -161,11 +160,13 @@ public class VariantToVCFConverter {
                         vcfVariant.getPosition(), vcfVariant.getREF(), vcfVariant.getALT() );
                 LOGGER.info("BioCommons variant:\t chrom: {},\tpos: {},\tref: {},\talt: {}\n", bioCommonsVCFVariant.getChrom(),
                         bioCommonsVCFVariant.getPos(), bioCommonsVCFVariant.getRef(), bioCommonsVCFVariant.getAlt());
+                VariantErrorCounter.bioCommonsVariantNotTheSameAsVCFVariant();
                 vcfVariant.setValidVariant(false);
             }
         } else {
             LOGGER.info("{}: {}", vcfVariant.getRawVariant().getLineNumber(), vcfVariant.getRawVariant().getRawInformation());
             LOGGER.info("BioCommons raised an error while creating a variant. Error: {}\n", bioCommonsVCFVariant.getError());
+            VariantErrorCounter.addBioCommonsError(bioCommonsVCFVariant.getError());
             vcfVariant.setValidVariant(false);
         }
     }
@@ -221,7 +222,7 @@ public class VariantToVCFConverter {
             String nameUMC = entry.getKey();
             int variantsBeforeValidation = countVariantsBeforeValidation.get(nameUMC);
             int validVariants = entry.getValue().size();
-            LOGGER.info("{} valid variants for UMC: {}. Started with {} variants.", validVariants, nameUMC, variantsBeforeValidation);
+            LOGGER.info("{} valid variants for UMC: {}. Started with {} variants. Total errors: {}", validVariants, nameUMC, variantsBeforeValidation, variantsBeforeValidation - validVariants);
         }
     }
 

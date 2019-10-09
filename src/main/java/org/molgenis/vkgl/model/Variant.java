@@ -42,7 +42,11 @@ public class Variant implements Serializable {
     public void setVariantType(String variantNotation) {
         if (variantNotation.contains(">")) {
             this.variantType = VariantType.SNP;
+        } else if (variantNotation.matches(".*del[ACGT]*ins[ACGT]*")) {
+            this.variantType = VariantType.DELETION_INSERTION;
         } else if (variantNotation.contains("delins")) {
+            this.variantType = VariantType.DELETION_INSERTION;
+        } else if (variantNotation.matches(".*del[ACGT]*ins\\d*")) {
             this.variantType = VariantType.DELETION_INSERTION;
         } else if (variantNotation.contains("del")) {
             this.variantType = VariantType.DELETION;
@@ -50,7 +54,7 @@ public class Variant implements Serializable {
             this.variantType = VariantType.INSERTION;
         } else if (variantNotation.contains("dup")) {
             this.variantType = VariantType.DUPLICATION;
-        } else {
+        }  else {
             this.variantType = VariantType.NOT_CLASSIFIED;
         }
     }

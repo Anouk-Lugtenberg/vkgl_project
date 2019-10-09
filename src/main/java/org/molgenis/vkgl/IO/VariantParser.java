@@ -7,6 +7,7 @@ import org.molgenis.vkgl.model.CartageniaVariant;
 import org.molgenis.vkgl.model.HGVSVariant;
 import org.molgenis.vkgl.model.RadboudVariant;
 import org.molgenis.vkgl.model.Variant;
+import org.molgenis.vkgl.service.VariantErrorCounter;
 import org.molgenis.vkgl.service.VariantFormat;
 import org.molgenis.vkgl.service.VariantFormatDeterminer;
 
@@ -67,10 +68,12 @@ public class VariantParser {
                 } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
                     if (lineCount != 1) {
                         LOGGER.error("Line {} of {} could not be processed. Please check the syntax.\n", lineCount, file);
+                        VariantErrorCounter.fileParsingErrorsPlusOne();
                         LOGGER.error(line);
                     } else {
                         //Some of the files contain headers, those should be skipped.
                         LOGGER.info("Line {} of {} could not be processed. Probably header, skipping line.\n", lineCount, file);
+                        VariantErrorCounter.fileParsingErrorsPlusOne();
                         LOGGER.info(line);
                     }
                 }
@@ -145,7 +148,7 @@ public class VariantParser {
         cartageniaVariant.setcDNANotation(columns[9]);
         cartageniaVariant.setProteinNotation(columns[10]);
         cartageniaVariant.setExon(columns[11]);
-        cartageniaVariant.setVariantType(columns[12]);
+        cartageniaVariant.setVariantType(cartageniaVariant.getcDNANotation());
         cartageniaVariant.setLocation(columns[13]);
         cartageniaVariant.setEffect(columns[14]);
         cartageniaVariant.setClassification(columns[15]);

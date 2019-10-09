@@ -31,23 +31,25 @@ public class VariantWriter {
             ArrayList<VCFVariant> vcfVariants = vcfVariantsPerUMC.getValue();
 
             File vcfFile = directoryHandler.createFile(nameUMC + ".vcf", directoryToWrite);
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(vcfFile));
+            File filteredRawDataFile = directoryHandler.createFile("Filtered_raw_data" + nameUMC + ".txt", directoryToWrite);
+            BufferedWriter bufferedWriterVCF = new BufferedWriter(new FileWriter(vcfFile));
+            BufferedWriter bufferedWriterRawData = new BufferedWriter(new FileWriter(filteredRawDataFile));
             for (VCFVariant vcfVariant : vcfVariants) {
+                bufferedWriterRawData.write(vcfVariant.getRawVariant().getRawInformation());
                 String line = createVCFVariantLine(vcfVariant);
-                bufferedWriter.write(line);
+                bufferedWriterVCF.write(line);
             }
-            bufferedWriter.close();
+            bufferedWriterVCF.close();
         }
     }
 
     private String createVCFVariantLine(VCFVariant variant) {
         return variant.getChromosome() +
                 "\t" + variant.getPosition() +
-                "\t" + "." +
                 "\t" + variant.getREF() +
-                "\t" + variant.getALT() + "\n";
-//                "\t" + variant.getClassification() + "\n";
-//                "\t" + variant.isValidVariant() + "\n";
+                "\t" + variant.getALT() +
+                "\t" + variant.getClassification() +
+                "\t" + variant.getRawVariant().getRawInformation() + "\n";
     }
 
     /**

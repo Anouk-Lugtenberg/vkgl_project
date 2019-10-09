@@ -62,8 +62,8 @@ public class BioCommonsHelper {
             } else {
                 rawResponse = httpClient.execute(httpPostLeftAnchorTrue);
             }
-            String response = convertInputStreamToString(rawResponse.getEntity().getContent());
-            bioCommonsVCFVariants = convertToBioCommonsVariants(response);
+//            String response = convertInputStreamToString(rawResponse.getEntity().getContent());
+            bioCommonsVCFVariants = convertToBioCommonsVariants(convertInputStreamToString(rawResponse.getEntity().getContent()));
         } catch (IOException e) {
             e.printStackTrace();
             bioCommonsVCFVariants = null;

@@ -1,6 +1,6 @@
 package org.molgenis.vkgl;
 import org.molgenis.vkgl.IO.RawFileProcessor;
-import org.molgenis.vkgl.service.VCFConverter;
+import org.molgenis.vkgl.service.VariantErrorCounter;
 
 import java.util.Arrays;
 
@@ -33,8 +33,6 @@ public class Main {
 
         RawFileProcessor rawFileProcessor = new RawFileProcessor();
         rawFileProcessor.start(args);
-
-        String bases = VCFConverter.getBasesFromPosition("1", 43395335, 43395350);
-        System.out.println("bases = " + bases);
+        VariantErrorCounter.writeErrors();
     }
 }

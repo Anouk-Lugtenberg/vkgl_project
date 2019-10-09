@@ -42,10 +42,12 @@ public class VariantValidator {
                                 //This is corrected by extracting the number of items which are removed beforehand from
                                 //the current position.
                                 itemsToBeRemoved.add(currentPosition - itemsToBeRemoved.size());
+                                VariantErrorCounter.removedDuplicatesFromVCFVariantList();
                             } else {
                                 LOGGER.info("Variants above are duplicates in VCF record (same position, REF, ALT), but do not have the same classification. Flagging as invalid.\n");
                                 variant.setValidVariant(false);
                                 expectedDuplicateVariant.setValidVariant(false);
+                                VariantErrorCounter.duplicatesWhichDoNotHaveTheSameClassification();
                             }
                         }
                     }

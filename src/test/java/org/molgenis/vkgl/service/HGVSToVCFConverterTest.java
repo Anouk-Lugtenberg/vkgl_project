@@ -1,5 +1,6 @@
 package org.molgenis.vkgl.service;
 
+import com.fasterxml.jackson.databind.deser.DataFormatReaders;
 import com.shazam.shazamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,23 @@ class HGVSToVCFConverterTest {
         expectedVCFVariant.setValidVariant(true);
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
 
+    @Test
+    void invalidSNPifReferenceNotTheSame() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("1");
+        hgvsVariant.setGenomicDNA("NC_000001.10:g.1G>A");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("1", 1, "G", "A", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(false);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
     }
 
     @Test
@@ -291,4 +308,125 @@ class HGVSToVCFConverterTest {
 
         MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
     }
+
+    @Test
+    void convertDeletionInsertionWhichIsDeletion() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("10");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.2_14delinsACACACACACAC");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("10", 1, "GC", "G", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionInsertionDifferentWayOfWriting() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("10");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.2_14delCACACACACACACinsACACACACACAC");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("10", 1, "GC", "G", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionInsertionWhichIsStrippedFromLeft() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("11");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.2_7delinsTGG");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("11", 1, "ACTG", "A", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionInsertionWhichIsStrippedFromRight() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("11");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.2_7delinsCTG");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("11", 3, "TGTG", "T", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionInsertionWhichIsInsertion() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("10");
+        hgvsVariant.setGenomicDNA("NC_000001.10:g.2_4delinsCACC");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("10", 3, "A", "AC", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionInsertionWhichIsInsertionTwo() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("11");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.2_6delCTGTGinsCTGTGTG");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("11", 2, "C", "CTG", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+    }
+
+    @Test
+    void convertDeletionInsertionWhichIsSNP() {
+        HGVSVariant hgvsVariant = new HGVSVariant();
+        hgvsVariant.setChromosome("11");
+        hgvsVariant.setGenomicDNA("NC_000001.11:g.4_5delinsTT");
+        hgvsVariant.setClassification("?");
+        hgvsVariant.setVariantType(hgvsVariant.getGenomicDNA());
+
+        HGVSToVCFConverter hgvsToVCFConverter = new HGVSToVCFConverter(hgvsVariant);
+        VCFVariant actualVCFVariant = hgvsToVCFConverter.convertToVCF();
+
+        VCFVariant expectedVCFVariant = new VCFVariant("11", 4, "G", "T", ClassificationType.VOUS, hgvsVariant);
+        expectedVCFVariant.setValidVariant(true);
+
+        MatcherAssert.assertThat(actualVCFVariant, sameBeanAs(expectedVCFVariant));
+
+    }
+
 }

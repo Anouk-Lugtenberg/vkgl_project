@@ -15,6 +15,7 @@ public class CLIParser {
     private Path inputDirectory;
     private Path outputDirectory;
     public static File fastaFileDirectory;
+    private boolean convertVariants = false;
     private boolean writeVariantTypesToFile = false;
     private boolean countVariantTypes = false;
 
@@ -25,8 +26,7 @@ public class CLIParser {
         options.addOption("f", "indexedFastaFile", true, "Directory containing an indexed Fasta file, used as reference.");
         options.addOption("o", "outputDirectory", true, "Directory for storage of the normalized output files. The program will also use these files to check" +
                 "if previous runs has been done and will not execute again for variants already in this directory. If not specified the directory '/normalizedData' will be used.");
-        options.addOption(null, "cleanRun", false, "Empties the directory given under option 'outputDirectory' or the standard '/normalizedData'" +
-                "directory and starts a clean run.");
+        options.addOption("convert", "convertFileFormats", false, "converts the variants from the input directory to a VCF like format");
         options.addOption("writeVariants", "writeVariantTypesPerUMC", false, "Writes the difference of the variant types (SNPs/del/ins/delins/subs) to a file.");
         options.addOption("count", "countVariantTypeOccurrences", false, "Writes the occurrences of the variants to the screen");
     }
@@ -69,14 +69,15 @@ public class CLIParser {
                     }
                 }
                 setOutputDirectory(outputDirectory);
-                if (cmd.hasOption("cleanRun")) {
-                    directoryHandler.emptyDirectory(outputDirectory);
-                }
+                directoryHandler.emptyDirectory(outputDirectory);
                 if (cmd.hasOption("writeVariantTypesPerUMC")) {
                     this.writeVariantTypesToFile = true;
                 }
                 if (cmd.hasOption("count")) {
                     this.countVariantTypes = true;
+                }
+                if (cmd.hasOption("convert")) {
+                    this.convertVariants = true;
                 }
             } else {
                 throw new IllegalArgumentException("Missing directory for input files.");
@@ -120,4 +121,5 @@ public class CLIParser {
 
     public boolean getWriteVariantTypesToFile() { return writeVariantTypesToFile; }
     public boolean getCountVariantTypes() { return countVariantTypes; }
+    public boolean convertVariants() { return convertVariants; }
 }
